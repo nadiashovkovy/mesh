@@ -9,6 +9,7 @@ export default function Dashboard() {
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
   const [currentWorkspace, setCurrentWorkspace] = useState({ id: 1, name: 'Research Lab', active: 3 });
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Workspace-specific notes
   const workspaceNotes = {
@@ -133,8 +134,23 @@ export default function Dashboard() {
 
         {/* Canvas + Right Panel */}
         <div className="flex-1 flex overflow-hidden">
-          <Canvas selectedNode={selectedNode} onSelectNode={handleSelectNode} notes={currentNotes} />
-          <RightPanel isOpen={rightPanelOpen} selectedNode={selectedNode} onToggle={() => setRightPanelOpen(!rightPanelOpen)} />
+          <Canvas 
+            selectedNode={selectedNode} 
+            onSelectNode={handleSelectNode} 
+            notes={currentNotes}
+            isFullscreen={isFullscreen}
+            onFullscreenChange={setIsFullscreen}
+            rightPanelOpen={rightPanelOpen}
+            onRightPanelToggle={() => setRightPanelOpen(!rightPanelOpen)}
+          />
+          {!isFullscreen && (
+            <RightPanel 
+              isOpen={rightPanelOpen} 
+              selectedNode={selectedNode} 
+              onToggle={() => setRightPanelOpen(!rightPanelOpen)}
+              isFullscreen={false}
+            />
+          )}
         </div>
       </div>
     </div>

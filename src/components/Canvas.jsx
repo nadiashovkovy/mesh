@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, ZoomIn, ZoomOut } from 'lucide-react';
+import { Plus, ZoomIn, ZoomOut, Maximize, Minimize, Sparkles, GitBranch, Download, Share2, MoreVertical } from 'lucide-react';
 import NoteCard from './Notecard';
 import CollaborationIndicator from './CollaborationIndicator';
+import RightPanel from './RightPanel';
 
-export default function Canvas({ selectedNode, onSelectNode, notes }) {
+export default function Canvas({ selectedNode, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle }) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [showActionMenu, setShowActionMenu] = useState(false);
   const canvasRef = useRef(null);
   const isPinching = useRef(false);
   const lastDistance = useRef(0);
@@ -103,6 +105,16 @@ export default function Canvas({ selectedNode, onSelectNode, notes }) {
     return () => canvas.removeEventListener('wheel', handleWheel);
   }, []);
 
+  // Listen for fullscreen changes (including ESC key)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      onFullscreenChange(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [onFullscreenChange]);
+
   const getDistance = (touch1, touch2) => {
     const dx = touch1.clientX - touch2.clientX;
     const dy = touch1.clientY - touch2.clientY;
@@ -121,6 +133,25 @@ export default function Canvas({ selectedNode, onSelectNode, notes }) {
     setZoom(1);
     setPan({ x: 0, y: 0 });
   };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      canvasRef.current?.requestFullscreen();
+      onFullscreenChange(true);
+    } else {
+      document.exitFullscreen();
+      onFullscreenChange(false);
+    }
+  };
+
+  const actionMenuItems = [
+    { icon: Plus, label: 'New Note', onClick: () => console.log('New Note') },
+    { icon: isFullscreen ? Minimize : Maximize, label: isFullscreen ? 'Exit Fullscreen' : 'Fullscreen', onClick: toggleFullscreen },
+    { icon: GitBranch, label: 'Simplify', onClick: () => console.log('Simplify') },
+    { icon: Sparkles, label: 'AI Overview', onClick: () => console.log('AI Overview') },
+    { icon: Share2, label: 'Share', onClick: () => console.log('Share') },
+    { icon: Download, label: 'Export', onClick: () => console.log('Export') },
+  ];
 
   return (
     <div 
@@ -182,7 +213,11 @@ export default function Canvas({ selectedNode, onSelectNode, notes }) {
         </svg>
 
         {/* Zoom Controls */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2 bg-slate-900/80 backdrop-blur-sm rounded-lg border border-slate-800 p-2">
+        <div className={`absolute flex flex-col gap-2 bg-slate-900/80 backdrop-blur-sm rounded-lg border border-slate-800 p-2 transition-all duration-300 ${
+          isFullscreen ? 'top-8' : 'top-4'
+        } ${
+          isFullscreen && rightPanelOpen ? 'right-96' : 'right-4'
+        }`}>
           <button
             onClick={handleZoomIn}
             disabled={zoom >= MAX_ZOOM}
@@ -212,15 +247,51 @@ export default function Canvas({ selectedNode, onSelectNode, notes }) {
         </div>
       </div>
 
-      {/* Floating Action Button */}
-      <button className="absolute bottom-8 right-8 p-4 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full shadow-xl hover:shadow-2xl hover:shadow-purple-500/50 transition hover:scale-110 z-10">
-        <Plus size={24} className="text-white" />
-      </button>
+      {/* Floating Action Menu */}
+      <div 
+        className={`absolute bottom-8 z-[60] transition-all duration-300 ${
+          isFullscreen && rightPanelOpen ? 'right-96' : 'right-8'
+        }`}
+        onMouseEnter={() => setShowActionMenu(true)}
+        onMouseLeave={() => setShowActionMenu(false)}
+      >
+        {showActionMenu ? (
+          <div className="flex flex-col gap-2 bg-slate-900/95 backdrop-blur-sm rounded-2xl border border-slate-800 p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            {actionMenuItems.map((item, index) => (
+              <button
+                key={index}
+                onClick={item.onClick}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group whitespace-nowrap"
+                style={{ animationDelay: `${index * 30}ms` }}
+              >
+                <item.icon size={18} className="text-slate-400 group-hover:text-cyan-400 transition" />
+                <span className="text-sm text-slate-300 group-hover:text-white transition">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <button className="p-4 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full shadow-xl hover:shadow-2xl hover:shadow-purple-500/50 transition hover:scale-110">
+            <MoreVertical size={24} className="text-white" />
+          </button>
+        )}
+      </div>
 
       {/* Collaboration Indicator */}
       <div className="absolute bottom-8 left-8 z-10">
         <CollaborationIndicator />
       </div>
+
+      {/* Right Panel (only in fullscreen) */}
+      {isFullscreen && (
+        <div className="absolute top-8 right-8 bottom-8 z-50">
+          <RightPanel 
+            isOpen={rightPanelOpen} 
+            selectedNode={selectedNode} 
+            onToggle={onRightPanelToggle}
+            isFullscreen={true}
+          />
+        </div>
+      )}
     </div>
   );
 }

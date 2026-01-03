@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
 
-export default function RightPanel({ isOpen, selectedNode, onToggle }) {
+export default function RightPanel({ isOpen, selectedNode, onToggle, isFullscreen = false }) {
   const [activeTab, setActiveTab] = useState('graph');
 
   // Switch to details tab when a node is selected
@@ -26,7 +26,7 @@ export default function RightPanel({ isOpen, selectedNode, onToggle }) {
   ];
 
   return (
-    <div className="relative">
+    <div className="relative h-full">
       {/* Toggle Button */}
       <button
         onClick={onToggle}
@@ -36,7 +36,7 @@ export default function RightPanel({ isOpen, selectedNode, onToggle }) {
         {isOpen ? <ChevronRight size={16} className="text-slate-400" /> : <ChevronLeft size={16} className="text-slate-400" />}
       </button>
 
-      <div className={`${isOpen ? 'w-80' : 'w-0'} bg-slate-900/50 backdrop-blur border-l border-slate-800 flex flex-col overflow-hidden transition-all duration-300`}>
+      <div className={`${isOpen ? 'w-80' : 'w-0'} ${isFullscreen ? 'h-full rounded-2xl shadow-2xl border border-slate-800' : ''} bg-slate-900/50 backdrop-blur ${!isFullscreen ? 'border-l border-slate-800' : ''} flex flex-col overflow-hidden transition-all duration-300`}>
       {isOpen && (
         <>
           {/* Tabs */}
