@@ -8,6 +8,7 @@ export default function Canvas({ selectedNode, onSelectNode, notes, isFullscreen
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [showActionMenu, setShowActionMenu] = useState(false);
+  const [notePositions, setNotePositions] = useState({});
   const canvasRef = useRef(null);
   const isPinching = useRef(false);
   const lastDistance = useRef(0);
@@ -15,6 +16,21 @@ export default function Canvas({ selectedNode, onSelectNode, notes, isFullscreen
   const MIN_ZOOM = 0.5;
   const MAX_ZOOM = 2;
   const ZOOM_STEP = 0.1;
+
+  // Initialize random positions for notecards
+  useEffect(() => {
+    const initialPositions = {};
+    notes.forEach((note, index) => {
+      // Create scattered positions in a grid-like pattern with randomness
+      const col = index % 3;
+      const row = Math.floor(index / 3);
+      initialPositions[note.id] = {
+        x: col * 400 + Math.random() * 100,
+        y: row * 300 + Math.random() * 100
+      };
+    });
+    setNotePositions(initialPositions);
+  }, [notes.length]);
 
   // Keyboard shortcuts for zoom
   useEffect(() => {
@@ -153,6 +169,49 @@ export default function Canvas({ selectedNode, onSelectNode, notes, isFullscreen
     { icon: Download, label: 'Export', onClick: () => console.log('Export') },
   ];
 
+  const handlePositionChange = (noteId, position) => {
+    setNotePositions(prev => ({
+      ...prev,
+      [noteId]: position
+    }));
+  };
+
+  // Calculate connection lines between notecards
+  const getConnectionLines = () => {
+    const lines = [];
+    const cardWidth = 320; // w-80 = 320px
+    const cardHeight = 180; // approximate height
+    
+    // Create connections between sequential notes
+    for (let i = 0; i < notes.length - 1; i++) {
+      const fromNote = notes[i];
+      const toNote = notes[i + 1];
+      const fromPos = notePositions[fromNote.id];
+      const toPos = notePositions[toNote.id];
+      
+      if (fromPos && toPos) {
+        // Calculate center points of each card
+        const x1 = fromPos.x + cardWidth / 2;
+        const y1 = fromPos.y + cardHeight / 2;
+        const x2 = toPos.x + cardWidth / 2;
+        const y2 = toPos.y + cardHeight / 2;
+        
+        // Calculate control point for curve (midpoint with offset)
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+        const offsetY = Math.abs(x2 - x1) * 0.2;
+        
+        lines.push({
+          id: `${fromNote.id}-${toNote.id}`,
+          d: `M ${x1} ${y1} Q ${midX} ${midY - offsetY} ${x2} ${y2}`,
+          color: fromNote.color
+        });
+      }
+    }
+    
+    return lines;
+  };
+
   return (
     <div 
       ref={canvasRef}
@@ -172,45 +231,58 @@ export default function Canvas({ selectedNode, onSelectNode, notes, isFullscreen
 
       {/* Canvas Content */}
       <div className="relative p-8 h-full overflow-auto scrollbar-hide">
-        <div 
-          className="space-y-6 transition-transform origin-top-left"
-          style={{
-            transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
-          }}
-        >
-          {notes.map((note) => (
-            <div key={note.id} className={`${note.offset} transition-transform`}>
-              <NoteCard
-                id={note.id}
-                title={note.title}
-                description={note.description}
-                connections={note.connections}
-                color={note.color}
-                isSelected={selectedNode === note.id}
-                onClick={() => onSelectNode(note.id)}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Connection Lines */}
+        {/* Connection Lines - Behind notecards */}
         <svg 
           className="absolute inset-0 w-full h-full pointer-events-none" 
           style={{ 
-            opacity: 0.3,
+            opacity: 0.5,
             transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
             transformOrigin: 'top left',
           }}
         >
           <defs>
-            <linearGradient id="lineGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="lineGradCyan" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#00D4FF" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#06B6D4" stopOpacity="0.6" />
+            </linearGradient>
+            <linearGradient id="lineGradPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#A855F7" stopOpacity="0.6" />
               <stop offset="100%" stopColor="#7C3AED" stopOpacity="0.6" />
             </linearGradient>
           </defs>
-          <path d="M 340 180 Q 450 200 600 220" stroke="url(#lineGrad1)" strokeWidth="2" fill="none" />
-          <path d="M 600 220 Q 500 350 400 420" stroke="url(#lineGrad1)" strokeWidth="2" fill="none" />
+          {getConnectionLines().map((line) => (
+            <path
+              key={line.id}
+              d={line.d}
+              stroke={line.color === 'cyan' ? 'url(#lineGradCyan)' : 'url(#lineGradPurple)'}
+              strokeWidth="2"
+              fill="none"
+            />
+          ))}
         </svg>
+
+        <div 
+          className="relative min-h-[800px]"
+          style={{
+            transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
+            transformOrigin: 'top left',
+          }}
+        >
+          {notes.map((note) => (
+            <NoteCard
+              key={note.id}
+              id={note.id}
+              title={note.title}
+              description={note.description}
+              connections={note.connections}
+              color={note.color}
+              isSelected={selectedNode === note.id}
+              onClick={() => onSelectNode(note.id)}
+              position={notePositions[note.id]}
+              onPositionChange={handlePositionChange}
+            />
+          ))}
+        </div>
 
         {/* Zoom Controls */}
         <div className={`absolute flex flex-col gap-2 bg-slate-900/80 backdrop-blur-sm rounded-lg border border-slate-800 p-2 transition-all duration-300 ${
