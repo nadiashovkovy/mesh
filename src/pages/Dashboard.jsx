@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [notePositions, setNotePositions] = useState({});
+  const [copiedNodes, setCopiedNodes] = useState([]);
   const canvasRef = useRef(null);
 
   // Workspace-specific notes - now using state
@@ -135,9 +136,13 @@ export default function Dashboard() {
     setHistory(newHistory);
   };
 
-  // Keyboard shortcuts for undo/redo
+  // Keyboard shortcuts for undo/redo and copy/paste
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Check if user is typing in an input/textarea
+      const isInputFocused = document.activeElement.tagName === 'INPUT' || 
+                            document.activeElement.tagName === 'TEXTAREA';
+      
       if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
         e.preventDefault();
         if (e.shiftKey) {
@@ -158,11 +163,70 @@ export default function Dashboard() {
           }
         }
       }
+      
+      // Copy: Cmd+C / Ctrl+C
+      if ((e.metaKey || e.ctrlKey) && e.key === 'c' && !isInputFocused) {
+        if (selectedNodes.length > 0) {
+          e.preventDefault();
+          const nodesToCopy = currentNotes.filter(note => selectedNodes.includes(note.id));
+          setCopiedNodes(nodesToCopy.map(node => ({
+            ...node,
+            position: notePositions[node.id]
+          })));
+        }
+      }
+      
+      // Paste: Cmd+V / Ctrl+V
+      if ((e.metaKey || e.ctrlKey) && e.key === 'v' && !isInputFocused) {
+        if (copiedNodes.length > 0) {
+          e.preventDefault();
+          saveToHistory();
+          
+          const currentWorkspaceNotes = workspaceNotes[currentWorkspace.id] || [];
+          const maxId = currentWorkspaceNotes.length > 0 
+            ? Math.max(...currentWorkspaceNotes.map(n => n.id)) 
+            : 0;
+          
+          const idMap = {};
+          const newNodes = copiedNodes.map((node, index) => {
+            const newId = maxId + index + 1;
+            idMap[node.id] = newId;
+            return {
+              ...node,
+              id: newId,
+              // Clear connections for pasted nodes
+              connectedTo: []
+            };
+          });
+          
+          // Update positions with offset
+          const newPositions = { ...notePositions };
+          copiedNodes.forEach((node, index) => {
+            const newId = maxId + index + 1;
+            if (node.position) {
+              newPositions[newId] = {
+                x: node.position.x + 50,
+                y: node.position.y + 50
+              };
+            }
+          });
+          
+          setWorkspaceNotes({
+            ...workspaceNotes,
+            [currentWorkspace.id]: [...currentWorkspaceNotes, ...newNodes]
+          });
+          setNotePositions(newPositions);
+          
+          // Select the newly pasted nodes
+          setSelectedNodes(newNodes.map(n => n.id));
+          setRightPanelOpen(newNodes.length === 1);
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [historyIndex, history]);
+  }, [historyIndex, history, selectedNodes, currentNotes, copiedNodes, notePositions, workspaceNotes, currentWorkspace.id]);
 
   // Update page title when workspace changes
   useEffect(() => {
@@ -309,6 +373,14 @@ export default function Dashboard() {
     saveToHistory();
   };
 
+  const handleCopyNode = (nodeId) => {
+    const nodesToCopy = currentNotes.filter(note => note.id === nodeId);
+    setCopiedNodes(nodesToCopy.map(node => ({
+      ...node,
+      position: notePositions[node.id]
+    })));
+  };
+
   return (
     <div className="flex h-screen bg-black text-white font-sans">
       {/* Sidebar */}
@@ -352,6 +424,7 @@ export default function Dashboard() {
             notePositions={notePositions}
             onPositionUpdate={handlePositionUpdate}
             onPositionChangeComplete={handlePositionChangeComplete}
+            onCopyNode={handleCopyNode}
           />
           {!isFullscreen && (
             <RightPanel 

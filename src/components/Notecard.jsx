@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Lock, Unlock } from 'lucide-react';
 
-export default function NoteCard({ id, title, description, connectedTo, allNotes, color, isSelected, onClick, position, onPositionChange, selectedNodes, allNotePositions, onGroupPositionChange, onPositionChangeComplete, zoom = 1, pan = { x: 0, y: 0 }, onStartConnection, onEndConnection, onCancelConnection, isConnecting }) {
+export default function NoteCard({ id, title, description, connectedTo, allNotes, color, isSelected, onClick, position, onPositionChange, selectedNodes, allNotePositions, onGroupPositionChange, onPositionChangeComplete, zoom = 1, pan = { x: 0, y: 0 }, onStartConnection, onEndConnection, onCancelConnection, isConnecting, onCopy }) {
   const [isLocked, setIsLocked] = useState(false);
-  const [showConnectionMenu, setShowConnectionMenu] = useState(false);
+  const [showFloatingMenu, setShowFloatingMenu] = useState(false);
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
   const groupDragStartPositions = useRef({});
@@ -47,17 +47,15 @@ export default function NoteCard({ id, title, description, connectedTo, allNotes
     e.stopPropagation();
   };
 
+  const handleClick = (e) => {
+    // Normal single click behavior
+    onClick?.(e);
+  };
+
   const handleContextMenu = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setShowConnectionMenu(true);
-  };
-
-  const handleClick = (e) => {
-    // If another node is in connection mode and we're clicking this node, complete the connection
-    // The parent Canvas tracks which node is connecting via isConnecting prop
-    // We just call onClick normally, and Canvas will handle it
-    onClick?.(e);
+    setShowFloatingMenu(!showFloatingMenu);
   };
 
   useEffect(() => {
@@ -107,6 +105,20 @@ export default function NoteCard({ id, title, description, connectedTo, allNotes
     };
   }, [id, isLocked, onPositionChange, selectedNodes, position, allNotePositions, onGroupPositionChange, zoom, isConnecting, onEndConnection, onCancelConnection]);
 
+  // Close floating menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showFloatingMenu && cardRef.current && !cardRef.current.contains(e.target)) {
+        setShowFloatingMenu(false);
+      }
+    };
+
+    if (showFloatingMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showFloatingMenu]);
+
   const toggleLock = (e) => {
     e.stopPropagation();
     setIsLocked(!isLocked);
@@ -117,12 +129,12 @@ export default function NoteCard({ id, title, description, connectedTo, allNotes
       ref={cardRef}
       data-nodeid={id}
       onClick={handleClick}
-      onMouseDown={handleMouseDown}
       onContextMenu={handleContextMenu}
+      onMouseDown={handleMouseDown}
       className={`notecard w-80 p-6 backdrop-blur border-2 rounded-xl select-none ${
         isLocked ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'
       } ${
-        isConnecting ? 'ring-4 ring-cyan-400 ring-opacity-50' : ''
+        isConnecting ? 'border-dashed border-cyan-400 ring-2 ring-cyan-400 ring-opacity-30 animate-pulse' : ''
       } ${
         isSelected 
           ? 'bg-slate-800/90 border-cyan-400 shadow-2xl shadow-cyan-400/30 ring-2 ring-cyan-400/20 scale-105 transition-all duration-300' 
@@ -135,34 +147,60 @@ export default function NoteCard({ id, title, description, connectedTo, allNotes
         transition: isDraggingRef.current ? 'none' : 'transform 0.3s'
       } : {}}
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className={`text-2xl font-bold ${badgeColor} px-3 py-1 rounded`}>#{id}</div>
-        <div className="flex gap-1">
-          {showConnectionMenu && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onStartConnection?.(id);
-                setShowConnectionMenu(false);
-              }}
-              className="px-2 py-1 text-xs bg-cyan-500 hover:bg-cyan-600 rounded transition"
-              title="Form Connection"
-            >
-              Connect
-            </button>
-          )}
+      {/* Floating Menu */}
+      {showFloatingMenu && (
+        <div 
+          className="absolute -top-24 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl flex flex-col gap-0.5 p-1 z-50 min-w-[140px]"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
-            onClick={toggleLock}
-            className="p-1 hover:bg-slate-700/50 rounded transition"
+            onClick={(e) => {
+              e.stopPropagation();
+              onStartConnection?.(id);
+              setShowFloatingMenu(false);
+            }}
+            className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-cyan-600 rounded transition text-slate-200 w-full text-left"
+            title="Connect to another node"
+          >
+            Connect
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onCopy?.(id);
+              setShowFloatingMenu(false);
+            }}
+            className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 rounded transition text-slate-200 w-full text-left"
+            title="Copy node"
+          >
+            Copy
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleLock(e);
+            }}
+            className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 rounded transition text-slate-200 w-full text-left"
             title={isLocked ? 'Unlock position' : 'Lock position'}
           >
-            {isLocked ? (
-              <Lock size={16} className="text-slate-400" />
-            ) : (
-              <Unlock size={16} className="text-slate-500" />
-            )}
+            {isLocked ? 'Unlock' : 'Lock'}
           </button>
         </div>
+      )}
+
+      <div className="flex items-start justify-between mb-3">
+        <div className={`text-2xl font-bold ${badgeColor} px-3 py-1 rounded`}>#{id}</div>
+        <button
+          onClick={toggleLock}
+          className="p-1 hover:bg-slate-700/50 rounded transition"
+          title={isLocked ? 'Unlock position' : 'Lock position'}
+        >
+          {isLocked ? (
+            <Lock size={16} className="text-slate-400" />
+          ) : (
+            <Unlock size={16} className="text-slate-500" />
+          )}
+        </button>
       </div>
 
       <h3 className="font-semibold text-lg mb-2 text-white">{title}</h3>
