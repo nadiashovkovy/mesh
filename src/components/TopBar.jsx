@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, Share2, Search, Menu, Filter } from 'lucide-react';
 
-export default function TopBar({ onToggleSidebar, onSearch, searchQuery }) {
+export default function TopBar({ onToggleSidebar, onSearch, searchQuery, onCreateNode }) {
   const collaborators = [
     { color: '#F1B9E8', name: 'Emma' },
     { color: '#89EFEF', name: 'James' },
@@ -39,7 +39,10 @@ export default function TopBar({ onToggleSidebar, onSearch, searchQuery }) {
       </div>
 
       <div className="flex items-center gap-2">
-        <button className="flex items-center gap-2 px-4 py-2 bg-purple-500 rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition font-medium text-sm hover:scale-105">
+        <button 
+          onClick={onCreateNode}
+          className="flex items-center gap-2 px-4 py-2 bg-purple-500 rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition font-medium text-sm hover:scale-105"
+        >
           <Plus size={18} />
           <span className="hidden md:inline">New Node</span>
         </button>

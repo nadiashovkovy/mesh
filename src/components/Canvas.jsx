@@ -4,7 +4,7 @@ import NoteCard from './Notecard';
 import CollaborationIndicator from './CollaborationIndicator';
 import RightPanel from './RightPanel';
 
-const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery }, ref) => {
+const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery, onUpdateNote }, ref) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [showActionMenu, setShowActionMenu] = useState(false);
@@ -449,6 +449,7 @@ const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, on
             selectedNote={notes.find(note => note.id === selectedNode)}
             onToggle={onRightPanelToggle}
             isFullscreen={true}
+            onUpdateNote={onUpdateNote}
           />
         </div>
       )}

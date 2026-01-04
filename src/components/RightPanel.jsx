@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Lock, ChevronLeft, ChevronRight, Copy, Check } from 'lucide-react';
 
-export default function RightPanel({ isOpen, selectedNode, selectedNote, onToggle, isFullscreen = false }) {
+export default function RightPanel({ isOpen, selectedNode, selectedNote, onToggle, isFullscreen = false, onUpdateNote }) {
   const [activeTab, setActiveTab] = useState('graph');
   const [copiedField, setCopiedField] = useState(null);
 
@@ -34,16 +34,18 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, onToggl
 
   return (
     <div className="relative h-full">
-      {/* Toggle Button */}
-      <button
-        onClick={onToggle}
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-10 bg-slate-900/80 backdrop-blur-sm border border-slate-800 p-2 rounded-lg hover:bg-slate-800 transition z-10"
-        title={isOpen ? 'Collapse panel' : 'Expand panel'}
-      >
-        {isOpen ? <ChevronRight size={16} className="text-slate-400" /> : <ChevronLeft size={16} className="text-slate-400" />}
-      </button>
+      {/* Toggle Button - Always visible at top (hidden in fullscreen) */}
+      {!isFullscreen && (
+        <button
+          onClick={onToggle}
+          className="absolute left-0 top-0 h-[47px] -translate-x-full bg-slate-900/50 backdrop-blur border-l border-b border-slate-800 px-1.5 rounded-l-md hover:bg-slate-800/50 transition flex items-center"
+          title={isOpen ? 'Collapse panel' : 'Expand panel'}
+        >
+          {isOpen ? <ChevronRight size={25} className="text-slate-400" /> : <ChevronLeft size={25} className="text-slate-400" />}
+        </button>
+      )}
 
-      <div className={`h-full ${isOpen ? 'w-80' : 'w-0'} ${isFullscreen ? 'rounded-2xl shadow-2xl border border-slate-800' : 'border-l border-slate-800'} bg-slate-900/50 backdrop-blur flex flex-col overflow-hidden transition-all duration-300`}>
+      <div className={`h-full ${isOpen ? 'w-80' : 'w-0'} ${isFullscreen ? 'rounded-2xl shadow-2xl' : 'border-l border-slate-800'} bg-slate-900/50 backdrop-blur flex flex-col overflow-hidden transition-all duration-300`}>
       {isOpen && (
         <>
           {/* Tabs */}
@@ -131,7 +133,13 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, onToggl
                       )}
                     </button>
                   </div>
-                  <div className="text-sm font-medium text-slate-300">{selectedNote.title}</div>
+                  <input
+                    type="text"
+                    value={selectedNote.title}
+                    onChange={(e) => onUpdateNote && onUpdateNote(selectedNote.id, { title: e.target.value })}
+                    className="w-full bg-slate-700/50 border border-slate-600 rounded px-2 py-1 text-sm font-medium text-slate-300 focus:border-cyan-400 outline-none transition"
+                    placeholder="Enter title..."
+                  />
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                   <div className="flex items-center justify-between mb-2">
@@ -148,7 +156,13 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, onToggl
                       )}
                     </button>
                   </div>
-                  <div className="text-sm text-slate-300 leading-relaxed">{selectedNote.description}</div>
+                  <textarea
+                    value={selectedNote.description}
+                    onChange={(e) => onUpdateNote && onUpdateNote(selectedNote.id, { description: e.target.value })}
+                    className="w-full bg-slate-700/50 border border-slate-600 rounded px-2 py-1 text-sm text-slate-300 leading-relaxed focus:border-cyan-400 outline-none transition resize-none"
+                    placeholder="Enter description..."
+                    rows={4}
+                  />
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                   <div className="text-xs text-slate-400 mb-1">Connections</div>

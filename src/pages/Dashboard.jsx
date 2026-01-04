@@ -13,8 +13,8 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const canvasRef = useRef(null);
 
-  // Workspace-specific notes
-  const workspaceNotes = {
+  // Workspace-specific notes - now using state
+  const [workspaceNotes, setWorkspaceNotes] = useState({
     1: [ // Research Lab
       {
         id: 1,
@@ -93,7 +93,7 @@ export default function Dashboard() {
         offset: 'translate-x-52 translate-y-96',
       },
     ],
-  };
+  });
 
   const currentNotes = workspaceNotes[currentWorkspace.id] || [];
 
@@ -137,6 +137,43 @@ export default function Dashboard() {
     }
   };
 
+  const handleCreateNode = () => {
+    const currentWorkspaceNotes = workspaceNotes[currentWorkspace.id] || [];
+    const newId = currentWorkspaceNotes.length > 0 
+      ? Math.max(...currentWorkspaceNotes.map(n => n.id)) + 1 
+      : 1;
+    
+    const newNode = {
+      id: newId,
+      title: 'New Node',
+      description: 'Click to add description...',
+      connections: 0,
+      color: newId % 2 === 0 ? 'purple' : 'cyan',
+      offset: 'translate-x-0 translate-y-0',
+    };
+
+    setWorkspaceNotes({
+      ...workspaceNotes,
+      [currentWorkspace.id]: [...currentWorkspaceNotes, newNode]
+    });
+
+    // Select the new node
+    setSelectedNode(newId);
+    setRightPanelOpen(true);
+  };
+
+  const handleUpdateNode = (nodeId, updates) => {
+    const currentWorkspaceNotes = workspaceNotes[currentWorkspace.id] || [];
+    const updatedNotes = currentWorkspaceNotes.map(note =>
+      note.id === nodeId ? { ...note, ...updates } : note
+    );
+
+    setWorkspaceNotes({
+      ...workspaceNotes,
+      [currentWorkspace.id]: updatedNotes
+    });
+  };
+
   return (
     <div className="flex h-screen bg-black text-white font-sans">
       {/* Sidebar */}
@@ -153,6 +190,7 @@ export default function Dashboard() {
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           onSearch={handleSearch}
           searchQuery={searchQuery}
+          onCreateNode={handleCreateNode}
         />
 
         {/* Canvas + Right Panel */}
@@ -168,6 +206,7 @@ export default function Dashboard() {
             onRightPanelToggle={() => setRightPanelOpen(!rightPanelOpen)}
             onSearch={handleSearch}
             searchQuery={searchQuery}
+            onUpdateNote={handleUpdateNode}
           />
           {!isFullscreen && (
             <RightPanel 
@@ -176,6 +215,7 @@ export default function Dashboard() {
               selectedNote={currentNotes.find(note => note.id === selectedNode)}
               onToggle={() => setRightPanelOpen(!rightPanelOpen)}
               isFullscreen={false}
+              onUpdateNote={handleUpdateNode}
             />
           )}
         </div>
