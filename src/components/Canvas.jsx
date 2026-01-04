@@ -4,7 +4,7 @@ import NoteCard from './Notecard';
 import CollaborationIndicator from './CollaborationIndicator';
 import RightPanel from './RightPanel';
 
-const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery, onUpdateNote }, ref) => {
+const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery, onUpdateNote }, ref) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [showActionMenu, setShowActionMenu] = useState(false);
@@ -13,6 +13,10 @@ const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, on
   const canvasRef = useRef(null);
   const isPinching = useRef(false);
   const lastDistance = useRef(0);
+  const isDragging = useRef(false);
+  const lastMousePos = useRef({ x: 0, y: 0 });
+  const mousePos = useRef({ x: 0, y: 0 });
+  const animationFrameId = useRef(null);
 
   const MIN_ZOOM = .1;
   const MAX_ZOOM = 2;
@@ -153,17 +157,93 @@ const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, on
     const handleWheel = (e) => {
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
-        const delta = -e.deltaY * 0.001;
-        setZoom((prev) => {
-          const newZoom = prev + delta;
-          return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom));
+        
+        // Get mouse position relative to canvas
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        const delta = -e.deltaY * 0.009;
+        
+        setZoom((prevZoom) => {
+          const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prevZoom + delta));
+          
+          // Calculate the point in canvas space before zoom
+          const canvasX = (mouseX - pan.x * prevZoom) / prevZoom;
+          const canvasY = (mouseY - pan.y * prevZoom) / prevZoom;
+          
+          // Adjust pan so the same canvas point stays under the mouse
+          setPan({
+            x: (mouseX - canvasX * newZoom) / newZoom,
+            y: (mouseY - canvasY * newZoom) / newZoom
+          });
+          
+          return newZoom;
         });
       }
     };
 
     canvas.addEventListener('wheel', handleWheel, { passive: false });
     return () => canvas.removeEventListener('wheel', handleWheel);
-  }, []);
+  }, [pan]);
+
+  // Mouse drag to pan
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleMouseDown = (e) => {
+      // Allow dragging on left click when clicking on canvas background or content area
+      // Exclude interactive elements like buttons, inputs, notecards
+      const isInteractiveElement = e.target.closest('button, input, textarea, a, [draggable="true"], .notecard');
+      
+      if (e.button === 0 && !isInteractiveElement) {
+        e.preventDefault();
+        isDragging.current = true;
+        lastMousePos.current = { x: e.clientX, y: e.clientY };
+        canvas.style.cursor = 'grabbing';
+      }
+    };
+
+    const handleMouseMove = (e) => {
+      if (isDragging.current) {
+        const deltaX = e.clientX - lastMousePos.current.x;
+        const deltaY = e.clientY - lastMousePos.current.y;
+        
+        setPan((prev) => ({
+          x: prev.x + deltaX / zoom,
+          y: prev.y + deltaY / zoom
+        }));
+        
+        lastMousePos.current = { x: e.clientX, y: e.clientY };
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isDragging.current) {
+        isDragging.current = false;
+        canvas.style.cursor = '';
+      }
+    };
+
+    const handleMouseLeave = () => {
+      if (isDragging.current) {
+        isDragging.current = false;
+        canvas.style.cursor = '';
+      }
+    };
+    canvas.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      canvas.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      canvas.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [zoom]);
 
   // Listen for fullscreen changes (including ESC key)
   useEffect(() => {
@@ -174,6 +254,31 @@ const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, on
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, [onFullscreenChange]);
+
+  // Two-finger trackpad scroll for panning
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleScroll = (e) => {
+      // Only pan if NOT using Ctrl/Cmd (which is for zooming)
+      if (!e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        
+        // Use deltaX and deltaY for panning
+        setPan((prev) => ({
+          x: prev.x - e.deltaX / zoom,
+          y: prev.y - e.deltaY / zoom
+        }));
+      }
+    };
+
+    canvas.addEventListener('wheel', handleScroll, { passive: false });
+
+    return () => {
+      canvas.removeEventListener('wheel', handleScroll);
+    };
+  }, [zoom]);
 
   const getDistance = (touch1, touch2) => {
     const dx = touch1.clientX - touch2.clientX;
@@ -265,10 +370,9 @@ const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, on
         className="absolute inset-0 opacity-5"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(0,212,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.1) 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
-          transform: `scale(${zoom})`,
-          transformOrigin: 'top left',
+            'linear-gradient(#7e7e7eff 1px, transparent 1px), linear-gradient(90deg, #7e7e7eff 1px, transparent 1px)',
+          backgroundSize: `${40 * zoom}px ${40 * zoom}px`,
+          backgroundPosition: `${pan.x * zoom}px ${pan.y * zoom}px`,
         }}
       ></div>
 
@@ -318,7 +422,7 @@ const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, on
       )}
 
       {/* Canvas Content */}
-      <div className="relative p-8 h-full overflow-auto scrollbar-hide">
+      <div className="relative h-full overflow-hidden">
         {/* Connection Lines - Behind notecards */}
         <svg 
           className="absolute inset-0 w-full h-full pointer-events-none" 
@@ -350,7 +454,7 @@ const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, on
         </svg>
 
         <div 
-          className="relative min-h-[800px]"
+          className="absolute inset-0"
           style={{
             transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
             transformOrigin: 'top left',
@@ -364,10 +468,15 @@ const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, on
               description={note.description}
               connections={note.connections}
               color={note.color}
-              isSelected={selectedNode === note.id}
-              onClick={() => onSelectNode(note.id)}
+              isSelected={selectedNodes && selectedNodes.includes(note.id)}
+              onClick={(e) => onSelectNode(note.id, e.shiftKey)}
               position={notePositions[note.id]}
               onPositionChange={handlePositionChange}
+              selectedNodes={selectedNodes}
+              allNotePositions={notePositions}
+              onGroupPositionChange={setNotePositions}
+              zoom={zoom}
+              pan={pan}
             />
           ))}
         </div>
@@ -445,8 +554,8 @@ const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, on
         <div className="absolute top-8 right-8 bottom-8 z-50">
           <RightPanel 
             isOpen={rightPanelOpen} 
-            selectedNode={selectedNode} 
-            selectedNote={notes.find(note => note.id === selectedNode)}
+            selectedNode={selectedNodes && selectedNodes.length === 1 ? selectedNodes[0] : null} 
+            selectedNote={selectedNodes && selectedNodes.length === 1 ? notes.find(note => note.id === selectedNodes[0]) : null}
             onToggle={onRightPanelToggle}
             isFullscreen={true}
             onUpdateNote={onUpdateNote}

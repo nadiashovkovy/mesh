@@ -7,7 +7,7 @@ import RightPanel from '../components/RightPanel';
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
-  const [selectedNode, setSelectedNode] = useState(null);
+  const [selectedNodes, setSelectedNodes] = useState([]);
   const [currentWorkspace, setCurrentWorkspace] = useState({ id: 1, name: 'Research Lab', active: 3 });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -104,19 +104,29 @@ export default function Dashboard() {
 
   // Reset selection when workspace changes
   useEffect(() => {
-    setSelectedNode(null);
+    setSelectedNodes([]);
     setRightPanelOpen(false);
   }, [currentWorkspace.id]);
 
-  const handleSelectNode = (nodeId) => {
-    if (selectedNode === nodeId) {
-      // Clicking the same node - toggle panel closed and deselect
-      setSelectedNode(null);
-      setRightPanelOpen(false);
-    } else {
-      // Clicking a different node - open panel and select
-      setSelectedNode(nodeId);
+  const handleSelectNode = (nodeId, isShiftKey) => {
+    if (isShiftKey) {
+      // Multi-select: toggle node in selection
+      setSelectedNodes(prev =>
+        prev.includes(nodeId)
+          ? prev.filter(id => id !== nodeId)
+          : [...prev, nodeId]
+      );
       setRightPanelOpen(true);
+    } else {
+      if (selectedNodes.length === 1 && selectedNodes[0] === nodeId) {
+        // Clicking the same single node - toggle panel closed and deselect
+        setSelectedNodes([]);
+        setRightPanelOpen(false);
+      } else {
+        // Clicking a different node - open panel and select
+        setSelectedNodes([nodeId]);
+        setRightPanelOpen(true);
+      }
     }
   };
 
@@ -132,7 +142,7 @@ export default function Dashboard() {
 
     if (matchingNote && canvasRef.current) {
       canvasRef.current.panToNote(matchingNote.id);
-      setSelectedNode(matchingNote.id);
+      setSelectedNodes([matchingNote.id]);
       setRightPanelOpen(true);
     }
   };
@@ -158,7 +168,7 @@ export default function Dashboard() {
     });
 
     // Select the new node
-    setSelectedNode(newId);
+    setSelectedNodes([newId]);
     setRightPanelOpen(true);
   };
 
@@ -197,7 +207,7 @@ export default function Dashboard() {
         <div className="flex-1 flex overflow-hidden">
           <Canvas 
             ref={canvasRef}
-            selectedNode={selectedNode} 
+            selectedNodes={selectedNodes} 
             onSelectNode={handleSelectNode} 
             notes={currentNotes}
             isFullscreen={isFullscreen}
@@ -211,8 +221,8 @@ export default function Dashboard() {
           {!isFullscreen && (
             <RightPanel 
               isOpen={rightPanelOpen} 
-              selectedNode={selectedNode} 
-              selectedNote={currentNotes.find(note => note.id === selectedNode)}
+              selectedNode={selectedNodes.length === 1 ? selectedNodes[0] : null} 
+              selectedNote={selectedNodes.length === 1 ? currentNotes.find(note => note.id === selectedNodes[0]) : null}
               onToggle={() => setRightPanelOpen(!rightPanelOpen)}
               isFullscreen={false}
               onUpdateNote={handleUpdateNode}

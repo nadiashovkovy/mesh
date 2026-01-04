@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Lock, Unlock } from 'lucide-react';
 
-export default function NoteCard({ id, title, description, connections, color, isSelected, onClick, position, onPositionChange }) {
+export default function NoteCard({ id, title, description, connections, color, isSelected, onClick, position, onPositionChange, selectedNodes, allNotePositions, onGroupPositionChange, zoom = 1, pan = { x: 0, y: 0 } }) {
   const [isLocked, setIsLocked] = useState(false);
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
+  const groupDragStartPositions = useRef({});
   const cardRef = useRef(null);
 
   const borderColor = color === 'cyan' ? 'hover:border-cyan-400/50' : 'hover:border-purple-400/50';
@@ -17,10 +18,26 @@ export default function NoteCard({ id, title, description, connections, color, i
   const handleMouseDown = (e) => {
     if (isLocked || e.target.closest('button')) return;
     isDraggingRef.current = true;
+    
+    // Store the offset from mouse to card position in canvas space
     dragStartRef.current = {
-      x: e.clientX - (position?.x || 0),
-      y: e.clientY - (position?.y || 0)
+      x: e.clientX,
+      y: e.clientY,
+      initialX: position?.x || 0,
+      initialY: position?.y || 0
     };
+    
+    // If this card is part of a multi-selection, store starting positions of all selected cards
+    if (selectedNodes && selectedNodes.includes(id) && selectedNodes.length > 1) {
+      groupDragStartPositions.current = {};
+      selectedNodes.forEach(nodeId => {
+        const pos = allNotePositions[nodeId];
+        if (pos) {
+          groupDragStartPositions.current[nodeId] = { ...pos };
+        }
+      });
+    }
+    
     e.preventDefault();
     e.stopPropagation();
   };
@@ -28,13 +45,36 @@ export default function NoteCard({ id, title, description, connections, color, i
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDraggingRef.current || isLocked) return;
-      const newX = e.clientX - dragStartRef.current.x;
-      const newY = e.clientY - dragStartRef.current.y;
-      onPositionChange?.(id, { x: newX, y: newY });
+      
+      // Calculate mouse movement delta
+      const deltaX = (e.clientX - dragStartRef.current.x) / zoom;
+      const deltaY = (e.clientY - dragStartRef.current.y) / zoom;
+      
+      // Check if dragging multiple selected cards
+      if (selectedNodes && selectedNodes.includes(id) && selectedNodes.length > 1 && onGroupPositionChange) {
+        // Move all selected cards by the same delta
+        const newPositions = { ...allNotePositions };
+        selectedNodes.forEach(nodeId => {
+          const startPos = groupDragStartPositions.current[nodeId];
+          if (startPos) {
+            newPositions[nodeId] = {
+              x: startPos.x + deltaX,
+              y: startPos.y + deltaY
+            };
+          }
+        });
+        onGroupPositionChange(newPositions);
+      } else {
+        // Single card drag
+        const newX = dragStartRef.current.initialX + deltaX;
+        const newY = dragStartRef.current.initialY + deltaY;
+        onPositionChange?.(id, { x: newX, y: newY });
+      }
     };
 
     const handleMouseUp = () => {
       isDraggingRef.current = false;
+      groupDragStartPositions.current = {};
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -44,7 +84,7 @@ export default function NoteCard({ id, title, description, connections, color, i
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [id, isLocked, onPositionChange]);
+  }, [id, isLocked, onPositionChange, selectedNodes, position, allNotePositions, onGroupPositionChange, zoom]);
 
   const toggleLock = (e) => {
     e.stopPropagation();
@@ -56,7 +96,7 @@ export default function NoteCard({ id, title, description, connections, color, i
       ref={cardRef}
       onClick={onClick}
       onMouseDown={handleMouseDown}
-      className={`w-80 p-6 backdrop-blur border-2 rounded-xl select-none ${
+      className={`notecard w-80 p-6 backdrop-blur border-2 rounded-xl select-none ${
         isLocked ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'
       } ${
         isSelected 
