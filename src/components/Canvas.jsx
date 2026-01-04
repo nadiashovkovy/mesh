@@ -4,12 +4,13 @@ import NoteCard from './Notecard';
 import CollaborationIndicator from './CollaborationIndicator';
 import RightPanel from './RightPanel';
 
-const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery, onUpdateNote }, ref) => {
+const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery, searchResultsCount = 0, currentSearchIndex = 0, onSearchNavigate, onUpdateNote }, ref) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [notePositions, setNotePositions] = useState({});
   const [searchBarCollapsed, setSearchBarCollapsed] = useState(false);
+  const fullscreenSearchInputRef = useRef(null);
   const canvasRef = useRef(null);
   const isPinching = useRef(false);
   const lastDistance = useRef(0);
@@ -402,12 +403,47 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
                 <div className="relative flex-1">
                   <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" />
                   <input
+                    ref={fullscreenSearchInputRef}
                     type="text"
                     placeholder="Search titles, content..."
-                    className="w-80 pl-9 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:border-cyan-400 outline-none transition"
+                    className="w-80 pl-9 pr-20 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:border-cyan-400 outline-none transition"
                     value={searchQuery}
                     onChange={(e) => onSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (searchResultsCount > 0) {
+                        if (e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          onSearchNavigate?.('next');
+                        } else if (e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          onSearchNavigate?.('prev');
+                        }
+                      }
+                    }}
                   />
+                  {searchResultsCount > 0 && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                      <span className="text-xs text-slate-400 whitespace-nowrap">
+                        {currentSearchIndex + 1} of {searchResultsCount}
+                      </span>
+                      <div className="flex flex-col">
+                        <button
+                          onClick={() => onSearchNavigate?.('prev')}
+                          className="p-0.5 hover:bg-slate-700 rounded transition"
+                          title="Previous result (↑)"
+                        >
+                          <ChevronUp size={12} className="text-slate-400" />
+                        </button>
+                        <button
+                          onClick={() => onSearchNavigate?.('next')}
+                          className="p-0.5 hover:bg-slate-700 rounded transition"
+                          title="Next result (↓)"
+                        >
+                          <ChevronDown size={12} className="text-slate-400" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <button
                   className="p-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 hover:border-cyan-400 transition"

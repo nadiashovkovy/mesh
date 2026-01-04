@@ -11,6 +11,8 @@ export default function Dashboard() {
   const [currentWorkspace, setCurrentWorkspace] = useState({ id: 1, name: 'Research Lab', active: 3 });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
   const canvasRef = useRef(null);
 
   // Workspace-specific notes - now using state
@@ -132,17 +134,45 @@ export default function Dashboard() {
 
   const handleSearch = (query) => {
     setSearchQuery(query);
-    if (query.trim() === '') return;
+    if (query.trim() === '') {
+      setSearchResults([]);
+      setCurrentSearchIndex(0);
+      return;
+    }
 
-    // Search for matching notes
-    const matchingNote = currentNotes.find(note => 
+    // Search for all matching notes
+    const matches = currentNotes.filter(note => 
       note.title.toLowerCase().includes(query.toLowerCase()) ||
       note.description.toLowerCase().includes(query.toLowerCase())
     );
 
-    if (matchingNote && canvasRef.current) {
-      canvasRef.current.panToNote(matchingNote.id);
-      setSelectedNodes([matchingNote.id]);
+    setSearchResults(matches);
+    setCurrentSearchIndex(0);
+
+    if (matches.length > 0 && canvasRef.current) {
+      canvasRef.current.panToNote(matches[0].id);
+      setSelectedNodes([matches[0].id]);
+      setRightPanelOpen(true);
+    }
+  };
+
+  const handleSearchNavigate = (direction) => {
+    if (searchResults.length === 0) return;
+
+    let newIndex;
+    if (direction === 'next') {
+      newIndex = (currentSearchIndex + 1) % searchResults.length;
+    } else {
+      newIndex = currentSearchIndex - 1;
+      if (newIndex < 0) newIndex = searchResults.length - 1;
+    }
+
+    setCurrentSearchIndex(newIndex);
+    const targetNote = searchResults[newIndex];
+    
+    if (targetNote && canvasRef.current) {
+      canvasRef.current.panToNote(targetNote.id);
+      setSelectedNodes([targetNote.id]);
       setRightPanelOpen(true);
     }
   };
@@ -201,6 +231,9 @@ export default function Dashboard() {
           onSearch={handleSearch}
           searchQuery={searchQuery}
           onCreateNode={handleCreateNode}
+          searchResultsCount={searchResults.length}
+          currentSearchIndex={currentSearchIndex}
+          onSearchNavigate={handleSearchNavigate}
         />
 
         {/* Canvas + Right Panel */}
@@ -216,6 +249,9 @@ export default function Dashboard() {
             onRightPanelToggle={() => setRightPanelOpen(!rightPanelOpen)}
             onSearch={handleSearch}
             searchQuery={searchQuery}
+            searchResultsCount={searchResults.length}
+            currentSearchIndex={currentSearchIndex}
+            onSearchNavigate={handleSearchNavigate}
             onUpdateNote={handleUpdateNode}
           />
           {!isFullscreen && (
