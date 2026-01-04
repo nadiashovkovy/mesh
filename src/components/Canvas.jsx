@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Plus, ZoomIn, ZoomOut, Maximize, Minimize, Sparkles, GitBranch, Palette, Share2, MoreVertical } from 'lucide-react';
 import NoteCard from './Notecard';
 import CollaborationIndicator from './CollaborationIndicator';
 import RightPanel from './RightPanel';
 
-export default function Canvas({ selectedNode, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle }) {
+const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle }, ref) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [showActionMenu, setShowActionMenu] = useState(false);
@@ -16,6 +16,49 @@ export default function Canvas({ selectedNode, onSelectNode, notes, isFullscreen
   const MIN_ZOOM = 0.5;
   const MAX_ZOOM = 2;
   const ZOOM_STEP = 0.1;
+
+  // Expose panToNote method to parent
+  useImperativeHandle(ref, () => ({
+    panToNote: (noteId) => {
+      const position = notePositions[noteId];
+      if (!position) return;
+
+      // Calculate center of canvas
+      const canvasRect = canvasRef.current?.getBoundingClientRect();
+      if (!canvasRect) return;
+
+      const centerX = canvasRect.width / 2;
+      const centerY = canvasRect.height / 2;
+
+      // Calculate pan needed to center the notecard
+      const cardWidth = 320;
+      const cardHeight = 180;
+      const targetX = -(position.x + cardWidth / 2) * zoom + centerX;
+      const targetY = -(position.y + cardHeight / 2) * zoom + centerY;
+
+      // Animate pan
+      const startPan = { ...pan };
+      const duration = 800;
+      const startTime = Date.now();
+
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeProgress = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+
+        setPan({
+          x: startPan.x + (targetX - startPan.x) * easeProgress,
+          y: startPan.y + (targetY - startPan.y) * easeProgress
+        });
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+
+      requestAnimationFrame(animate);
+    }
+  }));
 
   // Initialize random positions for notecards
   useEffect(() => {
@@ -366,4 +409,6 @@ export default function Canvas({ selectedNode, onSelectNode, notes, isFullscreen
       )}
     </div>
   );
-}
+});
+
+export default Canvas;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, Share2, Search, Menu } from 'lucide-react';
 
-export default function TopBar({ onToggleSidebar }) {
+export default function TopBar({ onToggleSidebar, onSearch, searchQuery }) {
   const collaborators = [
     { color: '#F1B9E8', name: 'Emma' },
     { color: '#89EFEF', name: 'James' },
@@ -24,6 +24,8 @@ export default function TopBar({ onToggleSidebar }) {
             type="text"
             placeholder="Search notes, concepts, team..."
             className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:border-cyan-400 outline-none transition"
+            value={searchQuery}
+            onChange={(e) => onSearch(e.target.value)}
           />
         </div>
       </div>

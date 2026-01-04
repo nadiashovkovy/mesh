@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import Canvas from '../components/Canvas';
@@ -10,6 +10,8 @@ export default function Dashboard() {
   const [selectedNode, setSelectedNode] = useState(null);
   const [currentWorkspace, setCurrentWorkspace] = useState({ id: 1, name: 'Research Lab', active: 3 });
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const canvasRef = useRef(null);
 
   // Workspace-specific notes
   const workspaceNotes = {
@@ -118,6 +120,23 @@ export default function Dashboard() {
     }
   };
 
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    if (query.trim() === '') return;
+
+    // Search for matching notes
+    const matchingNote = currentNotes.find(note => 
+      note.title.toLowerCase().includes(query.toLowerCase()) ||
+      note.description.toLowerCase().includes(query.toLowerCase())
+    );
+
+    if (matchingNote && canvasRef.current) {
+      canvasRef.current.panToNote(matchingNote.id);
+      setSelectedNode(matchingNote.id);
+      setRightPanelOpen(true);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-black text-white font-sans">
       {/* Sidebar */}
@@ -130,11 +149,16 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <TopBar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <TopBar 
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onSearch={handleSearch}
+          searchQuery={searchQuery}
+        />
 
         {/* Canvas + Right Panel */}
         <div className="flex-1 flex overflow-hidden">
           <Canvas 
+            ref={canvasRef}
             selectedNode={selectedNode} 
             onSelectNode={handleSelectNode} 
             notes={currentNotes}
