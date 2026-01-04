@@ -187,8 +187,8 @@ export default function NoteCard({ id, title, description, connectedTo, allNotes
           </button>
         </div>
       )}
-
-      <div className="flex items-start justify-between mb-3">
+      {/* to show id number and lock/unlock icon button, uncomment div below */}
+      {/* <div className="flex items-start justify-between mb-3">
         <div className={`text-2xl font-bold ${badgeColor} px-3 py-1 rounded`}>#{id}</div>
         <button
           onClick={toggleLock}
@@ -201,7 +201,7 @@ export default function NoteCard({ id, title, description, connectedTo, allNotes
             <Unlock size={16} className="text-slate-500" />
           )}
         </button>
-      </div>
+      </div> */}
 
       <h3 className="font-semibold text-lg mb-2 text-white">{title}</h3>
       <p className="text-sm text-slate-300 mb-4 line-clamp-2">{description}</p>

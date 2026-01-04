@@ -8,7 +8,7 @@ export default function Sidebar({ isOpen, onToggle, onWorkspaceChange }) {
   const [workspaces, setWorkspaces] = useState([
     { id: 1, name: 'Research Lab', active: 3, isActive: true, color: 'from-cyan-400 to-purple-500' },
     { id: 2, name: 'Design Team', active: 5, isActive: false, color: 'from-pink-400 to-orange-500' },
-    { id: 3, name: 'Product Strategy', active: 2, isActive: false, color: 'from-green-400 to-blue-500' },
+    { id: 3, name: 'Personal', active: 2, isActive: false, color: 'from-green-400 to-blue-500' },
   ]);
   const [currentWorkspace, setCurrentWorkspace] = useState(workspaces[0]);
 
