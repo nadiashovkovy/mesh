@@ -11,6 +11,7 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
   const [notePositions, setNotePositions] = useState(externalPositions || {});
   const [searchBarCollapsed, setSearchBarCollapsed] = useState(false);
   const [connectingFrom, setConnectingFrom] = useState(null);
+  const [isSimplified, setIsSimplified] = useState(false);
   const fullscreenSearchInputRef = useRef(null);
   const canvasRef = useRef(null);
   const isPinching = useRef(false);
@@ -362,7 +363,7 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
   const actionMenuItems = [
     { icon: Plus, label: 'New Node', onClick: () => console.log('New Node') },
     { icon: isFullscreen ? Minimize : Maximize, label: isFullscreen ? 'Exit Fullscreen' : 'Fullscreen', onClick: toggleFullscreen },
-    { icon: GitBranch, label: 'Simplify', onClick: () => console.log('Simplify') },
+    { icon: GitBranch, label: isSimplified ? 'Show Details' : 'Simplify', onClick: () => setIsSimplified(!isSimplified) },
     { icon: Sparkles, label: 'AI Overview', onClick: () => console.log('AI Overview') },
     { icon: Palette, label: 'Change Theme', onClick: () => console.log('Change Theme') }
   ];
@@ -605,6 +606,7 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
               onCancelConnection={handleCancelConnection}
               isConnecting={connectingFrom === note.id}
               onCopy={onCopyNode}
+              isSimplified={isSimplified}
             />
           ))}
         </div>

@@ -5,6 +5,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Rubik', 'system-ui', '-apple-system', 'sans-serif'],
+      },
       colors: {
         cyan: {
           400: '#a6ead7ff',
@@ -12,7 +15,7 @@ module.exports = {
           600: '#42dcb0ff',
         },
         purple: {
-          400: '#2a1db0ff',
+          400: '#C0BAFF',
           500: '#130b6dff',
           600: '#070054ff',
         },

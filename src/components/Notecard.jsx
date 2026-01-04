@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Lock, Unlock } from 'lucide-react';
 
-export default function NoteCard({ id, title, description, connectedTo, allNotes, color, isSelected, onClick, position, onPositionChange, selectedNodes, allNotePositions, onGroupPositionChange, onPositionChangeComplete, zoom = 1, pan = { x: 0, y: 0 }, onStartConnection, onEndConnection, onCancelConnection, isConnecting, onCopy }) {
+export default function NoteCard({ id, title, description, connectedTo, allNotes, color, isSelected, onClick, position, onPositionChange, selectedNodes, allNotePositions, onGroupPositionChange, onPositionChangeComplete, zoom = 1, pan = { x: 0, y: 0 }, onStartConnection, onEndConnection, onCancelConnection, isConnecting, onCopy, isSimplified = false }) {
   const [isLocked, setIsLocked] = useState(false);
   const [showFloatingMenu, setShowFloatingMenu] = useState(false);
   const isDraggingRef = useRef(false);
@@ -203,13 +203,23 @@ export default function NoteCard({ id, title, description, connectedTo, allNotes
         </button>
       </div> */}
 
-      <h3 className="font-semibold text-lg mb-2 text-white">{title}</h3>
-      <p className="text-sm text-slate-300 mb-4 line-clamp-2">{description}</p>
+      {isSimplified ? (
+        /* Simplified view - title only centered */
+        <div className="flex items-center justify-center h-full">
+          <h3 className="font-semibold text-lg text-white text-center">{title}</h3>
+        </div>
+      ) : (
+        /* Full view with description and connections */
+        <>
+          <h3 className="font-semibold text-lg mb-2 text-white">{title}</h3>
+          <p className="text-sm text-slate-300 mb-4 line-clamp-2">{description}</p>
 
-      <div className="flex items-center justify-between pt-4 border-t border-slate-700">
-        <div className="text-xs text-slate-400">{totalConnections} connections</div>
-        <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${gradientColor}`}></div>
-      </div>
+          <div className="flex items-center justify-between pt-4 border-t border-slate-700">
+            <div className="text-xs text-slate-400">{totalConnections} connections</div>
+            <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${gradientColor}`}></div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

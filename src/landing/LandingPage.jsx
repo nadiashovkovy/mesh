@@ -6,21 +6,22 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-slate-950 to-black text-white font-sans">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-black/50 backdrop-blur-lg border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-5xl px-6">
+        <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl">
           <div className="flex items-center gap-3">
             <img src="/assets/MeshLogo.png" alt="Mesh Logo" className="w-6 h-6" />
             <span className="font-bold text-xl">Mesh</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-slate-300 hover:text-cyan-400 transition">Features</a>
-            <a href="#why-mesh" className="text-slate-300 hover:text-cyan-400 transition">Why Mesh</a>
-            <a href="#pricing" className="text-slate-300 hover:text-cyan-400 transition">Pricing</a>
+            <a href="#features" className="text-slate-300 hover:text-white transition text-sm">Features</a>
+            <a href="#why-mesh" className="text-slate-300 hover:text-white transition text-sm">Why Mesh</a>
+            <a href="#pricing" className="text-slate-300 hover:text-white transition text-sm">Pricing</a>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/app" className="text-slate-300 hover:text-cyan-400 transition">Sign In</Link>
-            <Link to="/app" className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg hover:opacity-90 transition font-medium">
-              Get Started Free
+            <Link to="/app" className="text-slate-300 hover:text-white transition text-sm">Sign In</Link>
+            <Link to="/app" className="px-4 py-2 bg-purple-500 rounded-full hover:opacity-90 transition font-medium text-sm flex items-center gap-2">
+              Try for Free
+              <ArrowRight size={16} />
             </Link>
           </div>
         </div>
@@ -37,7 +38,7 @@ export default function LandingPage() {
             <span className="text-sm text-cyan-400">Collaborative Thinking & Research Tool</span>
           </div>
           
-          <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <h1 className="text-6xl md:text-7xl font-bold mb-6 pb-2 leading-tight bg-clip-text text-transparent" style={{backgroundImage: 'linear-gradient(to right, #89efd2ff, #51accbff, #C0BAFF)'}}>
             Think Together.<br />Build Knowledge.
           </h1>
           
@@ -47,7 +48,7 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <Link to="/app" className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg hover:opacity-90 transition font-medium text-lg flex items-center gap-2">
+            <Link to="/app" className="px-8 py-4 bg-purple-500 rounded-lg hover:opacity-90 transition font-medium text-lg flex items-center gap-2">
               Start Building Free
               <ArrowRight size={20} />
             </Link>
@@ -266,7 +267,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center">Pricing</h2>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Free Tier */}
             <div className="p-8 bg-slate-900/50 border border-slate-800 rounded-2xl flex flex-col">
               <div className="mb-6">
@@ -274,223 +275,143 @@ export default function LandingPage() {
               </div>
               <div className="mb-4">
                 <span className="text-5xl font-bold">$0</span>
-                <span className="text-slate-400">/month</span>
+                <span className="text-slate-400">/forever</span>
               </div>
-              <p className="text-slate-300 mb-8">Perfect for getting started with memory as a service.</p>
+              <p className="text-slate-300 mb-8">Perfect for individuals exploring connected thinking.</p>
               
               <div className="space-y-4 mb-8 flex-grow">
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="w-2 h-2 rounded-full bg-white"></div>
-                  </div>
-                  <span className="text-slate-300">1000000 tokens processed</span>
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">1 workspace</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <circle cx="11" cy="11" r="8" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <span className="text-slate-300">10K search queries</span>
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Up to 50 notes</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <rect x="3" y="3" width="18" height="18" rx="2" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <span className="text-slate-300">Email support</span>
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Unlimited connections</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Visual canvas</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Search & navigation</span>
                 </div>
               </div>
               
-              <button className="w-full py-3 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition font-medium">
-                Try for free
-              </button>
+              <Link to="/app" className="w-full py-3 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition font-medium text-center">
+                Start for free
+              </Link>
             </div>
 
             {/* Pro Tier */}
-            <div className="p-8 bg-slate-900/50 border border-slate-800 rounded-2xl flex flex-col relative">
+            <div className="p-8 bg-slate-900/50 border-2 border-purple-500 rounded-2xl flex flex-col relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="px-3 py-1 bg-purple-500 rounded-full text-xs font-semibold">MOST POPULAR</span>
+              </div>
               <div className="mb-6">
                 <span className="px-3 py-1 bg-slate-800 border border-slate-700 rounded-full text-sm">Pro</span>
               </div>
               <div className="mb-4">
-                <span className="text-5xl font-bold">$19</span>
+                <span className="text-5xl font-bold">$10</span>
                 <span className="text-slate-400">/month</span>
               </div>
-              <p className="text-slate-300 mb-8">Memory for power users and quick moving teams.</p>
+              <p className="text-slate-300 mb-8">For power users and researchers who need unlimited everything.</p>
               
               <div className="space-y-4 mb-8 flex-grow">
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="w-2 h-2 rounded-full bg-white"></div>
-                  </div>
-                  <span className="text-slate-300">3000000 tokens processed</span>
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Unlimited workspaces</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <circle cx="11" cy="11" r="8" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <span className="text-slate-300">100K search queries</span>
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Unlimited notes</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <rect x="3" y="5" width="18" height="14" rx="2" strokeWidth="2"/>
-                      <path d="M3 10h18" strokeWidth="2"/>
-                    </svg>
-                  </div>
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Version history</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Advanced search & filters</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Export to PDF/Markdown</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
                   <span className="text-slate-300">Priority support</span>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path d="M3 3v18h18" strokeWidth="2"/>
-                      <path d="M18 17l-3-3-3 3-3-3-3 3" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <span className="text-slate-300">Advanced analytics</span>
-                </div>
               </div>
               
-              <button className="w-full py-3 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition font-medium flex items-center justify-center gap-2">
-                Get started with Pro
+              <Link to="/app" className="w-full py-3 bg-purple-500 rounded-lg hover:opacity-90 transition font-medium text-center flex items-center justify-center gap-2">
+                Start Pro trial
                 <ArrowRight size={16} />
-              </button>
+              </Link>
             </div>
 
-            {/* Scale Tier */}
+            {/* Team Tier */}
             <div className="p-8 bg-slate-900/50 border border-slate-800 rounded-2xl flex flex-col">
               <div className="mb-6">
-                <span className="px-3 py-1 bg-slate-800 border border-slate-700 rounded-full text-sm">Scale</span>
+                <span className="px-3 py-1 bg-slate-800 border border-slate-700 rounded-full text-sm">Team</span>
               </div>
               <div className="mb-4">
-                <span className="text-5xl font-bold">$399</span>
-                <span className="text-slate-400">/month</span>
+                <span className="text-5xl font-bold">$18</span>
+                <span className="text-slate-400">/user/month</span>
               </div>
-              <p className="text-slate-300 mb-8">Enterprise-grade memory for large organisations with dedicated support.</p>
+              <p className="text-slate-300 mb-8">For teams building knowledge together in real-time.</p>
               
               <div className="space-y-4 mb-8 flex-grow">
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                  </div>
-                  <span className="text-slate-300">80000000 tokens processed</span>
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Everything in Pro</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <circle cx="11" cy="11" r="8" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <span className="text-slate-300">20M search queries</span>
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Real-time collaboration</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <rect x="3" y="5" width="18" height="14" rx="2" strokeWidth="2"/>
-                      <path d="M3 10h18" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <span className="text-slate-300">Dedicated support</span>
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Shared team workspaces</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <span className="text-slate-300">Custom Integration</span>
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Comments & mentions</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10" strokeWidth="2"/>
-                      <path d="M12 6v6l4 2" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <span className="text-slate-300">Slack Support Channel</span>
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Workspace permissions</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Admin dashboard</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check size={18} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-slate-300">Priority support</span>
                 </div>
               </div>
               
-              <button className="w-full py-3 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition font-medium flex items-center justify-center gap-2">
-                Get started with Scale
+              <Link to="/app" className="w-full py-3 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition font-medium text-center flex items-center justify-center gap-2">
+                Start Team trial
                 <ArrowRight size={16} />
-              </button>
+              </Link>
             </div>
+          </div>
 
-            {/* Enterprise Tier */}
-            <div className="p-8 bg-slate-900/50 border border-slate-800 rounded-2xl flex flex-col">
-              <div className="mb-6">
-                <span className="px-3 py-1 bg-slate-800 border border-slate-700 rounded-full text-sm">Enterprise</span>
-              </div>
-              <div className="mb-4">
-                <span className="text-5xl font-bold">Custom</span>
-              </div>
-              <p className="text-slate-300 mb-8">Enterprise plans available with custom token limits, dedicated support, and SLA guarantees.</p>
-              
-              <div className="space-y-4 mb-8 flex-grow">
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                  </div>
-                  <span className="text-slate-300">Unlimited token usage</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <circle cx="11" cy="11" r="8" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <span className="text-slate-300">Unlimited search queries</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <rect x="3" y="5" width="18" height="14" rx="2" strokeWidth="2"/>
-                      <path d="M3 10h18" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <span className="text-slate-300">Forward deployed engineer</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <span className="text-slate-300">Custom integration</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10" strokeWidth="2"/>
-                      <path d="M12 6v6l4 2" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <span className="text-slate-300">Dedicated support + Slack Channel</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                  <span className="text-slate-300">Faster latency</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                  </div>
-                  <span className="text-slate-300">Self own data</span>
-                </div>
-              </div>
-              
-              <button className="w-full py-3 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition font-medium">
-                Send a mail
-              </button>
-            </div>
+          {/* Enterprise CTA */}
+          <div className="mt-12 p-8 bg-gradient-to-r from-slate-900/50 to-slate-800/50 border border-slate-700 rounded-2xl text-center">
+            <h3 className="text-2xl font-bold mb-3">Need something custom?</h3>
+            <p className="text-slate-300 mb-6 max-w-2xl mx-auto">
+              Enterprise plans with SSO, custom integrations, dedicated support, and SLA guarantees available.
+            </p>
+            <button className="px-6 py-3 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition font-medium">
+              Contact Sales
+            </button>
           </div>
         </div>
       </section>
@@ -516,7 +437,7 @@ export default function LandingPage() {
             <div className="p-6 bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-xl">
               <Users className="text-cyan-400 mx-auto mb-4" size={40} />
               <h3 className="text-xl font-semibold mb-2">Knowledge Workers</h3>
-              <p className="text-slate-400">Journalists, analysts, strategists, anyone building on ideas</p>
+              <p className="text-slate-400">Creatives, strategists, storytellers, anyone building on ideas</p>
             </div>
           </div>
         </div>
@@ -532,7 +453,7 @@ export default function LandingPage() {
             Start free. No credit card required. Collaborate in seconds.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg hover:opacity-90 transition font-medium text-lg flex items-center gap-2">
+            <button className="px-8 py-4 bg-purple-500 rounded-lg hover:opacity-90 transition font-medium text-lg flex items-center gap-2">
               Get Started Free
               <ArrowRight size={20} />
             </button>
