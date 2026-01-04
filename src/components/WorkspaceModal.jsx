@@ -41,7 +41,7 @@ export default function WorkspaceModal({ isOpen, onClose, onCreateWorkspace, onJ
       <div className="bg-gradient-to-b from-slate-900 to-slate-950 rounded-xl border border-slate-800 w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-          <h2 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+          <h2 className="text-xl font-bold bg-cyan-400 bg-clip-text text-transparent">
             Workspace Management
           </h2>
           <button
@@ -111,7 +111,7 @@ export default function WorkspaceModal({ isOpen, onClose, onCreateWorkspace, onJ
                   <button
                     type="submit"
                     disabled={!workspaceName.trim()}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-6 py-3 bg-purple-500 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Create Workspace
                   </button>
@@ -164,7 +164,7 @@ export default function WorkspaceModal({ isOpen, onClose, onCreateWorkspace, onJ
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleAcceptInvite(invite)}
-                            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg text-sm font-medium hover:from-cyan-600 hover:to-purple-600 transition"
+                            className="px-4 py-2 bg-cyan-600 rounded-lg text-sm font-medium hover:from-cyan-600 hover:to-purple-600 transition"
                           >
                             Accept
                           </button>
@@ -206,7 +206,7 @@ export default function WorkspaceModal({ isOpen, onClose, onCreateWorkspace, onJ
                     <button
                       type="submit"
                       disabled={!inviteCode.trim()}
-                      className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 px-6 py-3 bg-purple-500 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Join Workspace
                     </button>
@@ -221,11 +221,11 @@ export default function WorkspaceModal({ isOpen, onClose, onCreateWorkspace, onJ
                 </form>
               </div>
 
-              {/* Request Invite by Email */}
+              {/* Send Invite by Email */}
               <div className="pt-6 border-t border-slate-800">
-                <h3 className="text-lg font-semibold mb-2">Request Invitation</h3>
+                <h3 className="text-lg font-semibold mb-2">Send Invitation</h3>
                 <p className="text-sm text-slate-400 mb-4">
-                  Enter your email to request access to a workspace.
+                  Enter an email to send access to a workspace.
                 </p>
 
                 <div className="space-y-4">
@@ -248,7 +248,7 @@ export default function WorkspaceModal({ isOpen, onClose, onCreateWorkspace, onJ
                     className="w-full px-6 py-3 bg-slate-800 border border-slate-700 rounded-lg font-medium hover:bg-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <Mail size={18} />
-                    Request Invitation
+                    Send Invitation
                   </button>
                 </div>
               </div>

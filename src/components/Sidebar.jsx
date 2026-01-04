@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Home, BarChart3, Link2, Users, Settings, Menu, Plus, ChevronDown } from 'lucide-react';
-import WorkspaceModal from './WorkspaceModal';
 
-export default function Sidebar({ isOpen, onToggle, onWorkspaceChange }) {
-  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+export default function Sidebar({ isOpen, onToggle, onWorkspaceChange, onOpenWorkspaceModal }) {
   const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
   const [workspaces, setWorkspaces] = useState([
     { id: 1, name: 'Research Lab', active: 3, isActive: true, color: 'from-cyan-400 to-purple-500' },
@@ -109,7 +107,7 @@ export default function Sidebar({ isOpen, onToggle, onWorkspaceChange }) {
                 <button
                   onClick={() => {
                     setShowWorkspaceMenu(false);
-                    setShowWorkspaceModal(true);
+                    onOpenWorkspaceModal?.();
                   }}
                   className="w-full flex items-center gap-2 p-2 rounded hover:bg-slate-800 transition text-slate-300 hover:text-cyan-400"
                 >
@@ -147,13 +145,6 @@ export default function Sidebar({ isOpen, onToggle, onWorkspaceChange }) {
             </div>
           </div>
         </div>
-      )}
-      {/* Workspace Modal */}
-      <WorkspaceModal
-        isOpen={showWorkspaceModal}
-        onClose={() => setShowWorkspaceModal(false)}
-        onCreateWorkspace={handleCreateWorkspace}
-        onJoinWorkspace={handleJoinWorkspace}
-      />    </div>
+      )}    </div>
   );
 }

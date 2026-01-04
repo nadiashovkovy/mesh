@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import Canvas from '../components/Canvas';
 import RightPanel from '../components/RightPanel';
+import WorkspaceModal from '../components/WorkspaceModal';
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -17,6 +18,7 @@ export default function Dashboard() {
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [notePositions, setNotePositions] = useState({});
   const [copiedNodes, setCopiedNodes] = useState([]);
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const canvasRef = useRef(null);
 
   // Workspace-specific notes - now using state
@@ -381,6 +383,16 @@ export default function Dashboard() {
     })));
   };
 
+  const handleCreateWorkspace = (data) => {
+    // In a real app, this would create the workspace
+    console.log('Create workspace:', data);
+  };
+
+  const handleJoinWorkspace = (data) => {
+    // In a real app, this would join the workspace
+    console.log('Join workspace:', data);
+  };
+
   const handleDeleteNode = (nodeId) => {
     saveToHistory();
     
@@ -419,6 +431,7 @@ export default function Dashboard() {
         isOpen={sidebarOpen} 
         onToggle={() => setSidebarOpen(!sidebarOpen)}
         onWorkspaceChange={setCurrentWorkspace}
+        onOpenWorkspaceModal={() => setShowWorkspaceModal(true)}
       />
 
       {/* Main Content */}
@@ -471,6 +484,14 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Workspace Modal - Renders on top of everything */}
+      <WorkspaceModal
+        isOpen={showWorkspaceModal}
+        onClose={() => setShowWorkspaceModal(false)}
+        onCreateWorkspace={handleCreateWorkspace}
+        onJoinWorkspace={handleJoinWorkspace}
+      />
     </div>
   );
 }

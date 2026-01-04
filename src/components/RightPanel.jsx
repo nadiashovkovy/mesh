@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Lock, ChevronLeft, ChevronRight, Copy, Check } from 'lucide-react';
+import { Eye, Lock, ChevronLeft, ChevronRight, Copy, Check, Network, GitBranch, Layers } from 'lucide-react';
 
 export default function RightPanel({ isOpen, selectedNode, selectedNote, allNotes, onToggle, isFullscreen = false, onUpdateNote }) {
   const [activeTab, setActiveTab] = useState('graph');
@@ -13,6 +13,73 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, allNote
     return outgoing + incoming;
   };
 
+  // Calculate graph statistics
+  const getGraphStats = () => {
+    if (!allNotes || allNotes.length === 0) {
+      return {
+        totalNodes: 0,
+        totalConnections: 0,
+        mostConnected: null,
+        isolatedNodes: 0,
+        avgConnectionsPerNode: 0,
+        cyanNodes: 0,
+        purpleNodes: 0
+      };
+    }
+
+    const totalNodes = allNotes.length;
+    let totalConnections = 0;
+    let mostConnectedNode = null;
+    let maxConnections = 0;
+    let isolatedNodes = 0;
+    let cyanNodes = 0;
+    let purpleNodes = 0;
+
+    allNotes.forEach(note => {
+      const connections = getTotalConnections(note);
+      totalConnections += (note.connectedTo?.length || 0);
+      
+      if (connections > maxConnections) {
+        maxConnections = connections;
+        mostConnectedNode = note;
+      }
+      
+      if (connections === 0) {
+        isolatedNodes++;
+      }
+
+      if (note.color === 'cyan') cyanNodes++;
+      if (note.color === 'purple') purpleNodes++;
+    });
+
+    return {
+      totalNodes,
+      totalConnections,
+      mostConnected: mostConnectedNode,
+      isolatedNodes,
+      avgConnectionsPerNode: totalNodes > 0 ? (totalConnections / totalNodes).toFixed(1) : 0,
+      cyanNodes,
+      purpleNodes
+    };
+  };
+
+  // Get top connected nodes
+  const getTopConnectedNodes = () => {
+    if (!allNotes) return [];
+    
+    return allNotes
+      .map(note => ({
+        ...note,
+        totalConnections: getTotalConnections(note)
+      }))
+      .filter(note => note.totalConnections > 0)
+      .sort((a, b) => b.totalConnections - a.totalConnections)
+      .slice(0, 5);
+  };
+
+  const stats = getGraphStats();
+  const topNodes = getTopConnectedNodes();
+
   // Switch to details tab when a node is selected
   useEffect(() => {
     if (selectedNode && isOpen) {
@@ -25,14 +92,6 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, allNote
     setCopiedField(field);
     setTimeout(() => setCopiedField(null), 2000);
   };
-
-  const concepts = [
-    { label: 'Climate Change', connections: 12, color: 'from-cyan-400 to-cyan-600' },
-    { label: 'CO2 Emissions', connections: 8, color: 'from-purple-400 to-purple-600' },
-    { label: 'Greenhouse Effect', connections: 6, color: 'from-cyan-400 to-purple-500' },
-    { label: 'Policy Implications', connections: 5, color: 'from-purple-400 to-purple-600' },
-    { label: 'Future Projections', connections: 4, color: 'from-cyan-400 to-cyan-600' },
-  ];
 
   const activities = [
     { user: 'Emma', action: 'linked', target: 'Climate Data', color: 'bg-cyan-400' },
@@ -66,7 +125,7 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, allNote
               : 'text-slate-400 hover:text-cyan-400 hover:bg-slate-800/50'
           }`}
         >
-          Graph
+          Graph Overview
         </button>
         <button
           onClick={() => setActiveTab('details')}
@@ -83,29 +142,114 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, allNote
       {/* Content */}
       <div className="flex-1 p-6 overflow-auto">
         {activeTab === 'graph' ? (
-          <div className="space-y-4">
-            <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Connected Concepts</div>
-
-            {concepts.map((item, i) => (
-              <div
-                key={i}
-                className="p-3 bg-slate-800/50 rounded-lg hover:bg-slate-700/50 transition cursor-pointer border border-slate-700/50"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-slate-200">{item.label}</span>
-                  <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${item.color}`}></div>
+          <div className="space-y-6">
+            {/* Graph Overview Stats */}
+            <div>
+              <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">Graph Overview</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Network size={14} className="text-cyan-400" />
+                    <div className="text-xs text-slate-400">Total Nodes</div>
+                  </div>
+                  <div className="text-2xl font-bold text-slate-200">{stats.totalNodes}</div>
                 </div>
-                <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full bg-gradient-to-r ${item.color}`}
-                    style={{ width: `${(item.connections / 12) * 100}%` }}
-                  ></div>
+                <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                  <div className="flex items-center gap-2 mb-1">
+                    <GitBranch size={14} className="text-purple-400" />
+                    <div className="text-xs text-slate-400">Connections</div>
+                  </div>
+                  <div className="text-2xl font-bold text-slate-200">{stats.totalConnections}</div>
                 </div>
-                <div className="text-xs text-slate-400 mt-1">{item.connections} connections</div>
+                <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Layers size={14} className="text-cyan-400" />
+                    <div className="text-xs text-slate-400">Avg Connections</div>
+                  </div>
+                  <div className="text-2xl font-bold text-slate-200">{stats.avgConnectionsPerNode}</div>
+                </div>
+                <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Network size={14} className="text-orange-400" />
+                    <div className="text-xs text-slate-400">Isolated</div>
+                  </div>
+                  <div className="text-2xl font-bold text-slate-200">{stats.isolatedNodes}</div>
+                </div>
               </div>
-            ))}
+            </div>
 
-            <div className="pt-4 border-t border-slate-700 mt-6">
+            {/* Node Types */}
+            <div>
+              <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">Node Distribution</div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-2 bg-slate-800/30 rounded">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600"></div>
+                    <span className="text-sm text-slate-300">Cyan Nodes</span>
+                  </div>
+                  <span className="text-sm font-medium text-slate-200">{stats.cyanNodes}</span>
+                </div>
+                <div className="flex items-center justify-between p-2 bg-slate-800/30 rounded">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-gradient-to-br from-purple-400 to-purple-600"></div>
+                    <span className="text-sm text-slate-300">Purple Nodes</span>
+                  </div>
+                  <span className="text-sm font-medium text-slate-200">{stats.purpleNodes}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Most Connected Node */}
+            {stats.mostConnected && (
+              <div>
+                <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">Most Connected</div>
+                <div className="p-3 bg-gradient-to-br from-cyan-500/10 to-purple-500/10 rounded-lg border border-cyan-400/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-slate-200">{stats.mostConnected.title}</span>
+                    <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${stats.mostConnected.color === 'cyan' ? 'from-cyan-400 to-cyan-600' : 'from-purple-400 to-purple-600'}`}></div>
+                  </div>
+                  <div className="text-xs text-slate-400">{getTotalConnections(stats.mostConnected)} total connections</div>
+                </div>
+              </div>
+            )}
+
+            {/* Top Connected Nodes */}
+            {topNodes.length > 0 && (
+              <div>
+                <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">Top Connected Nodes</div>
+                <div className="space-y-2">
+                  {topNodes.map((node, i) => (
+                    <div
+                      key={node.id}
+                      className="p-3 bg-slate-800/50 rounded-lg hover:bg-slate-700/50 transition cursor-pointer border border-slate-700/50"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-slate-200 truncate flex-1">{node.title}</span>
+                        <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${node.color === 'cyan' ? 'from-cyan-400 to-cyan-600' : 'from-purple-400 to-purple-600'} ml-2 flex-shrink-0`}></div>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full bg-gradient-to-r ${node.color === 'cyan' ? 'from-cyan-400 to-cyan-600' : 'from-purple-400 to-purple-600'}`}
+                          style={{ width: `${Math.min((node.totalConnections / (stats.mostConnected ? getTotalConnections(stats.mostConnected) : 1)) * 100, 100)}%` }}
+                        ></div>
+                      </div>
+                      <div className="text-xs text-slate-400 mt-1">{node.totalConnections} connections</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {stats.totalNodes === 0 && (
+              <div className="text-center py-8">
+                <Network size={48} className="text-slate-600 mx-auto mb-3" />
+                <div className="text-sm text-slate-400">No nodes in this workspace yet</div>
+                <div className="text-xs text-slate-500 mt-1">Create nodes to see graph statistics</div>
+              </div>
+            )}
+
+            <div className="pt-4 border-t border-slate-700">
               <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">Recent Activity</div>
               <div className="space-y-2 text-sm">
                 {activities.map((activity, i) => (
@@ -178,11 +322,11 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, allNote
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                   <div className="text-xs text-slate-400 mb-1">Created</div>
-                  <div className="text-sm text-slate-300">2 days ago</div>
+                  <div className="text-sm text-slate-300">Just now</div>
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                   <div className="text-xs text-slate-400 mb-1">Last Updated</div>
-                  <div className="text-sm text-slate-300">1 hour ago by Emma</div>
+                  <div className="text-sm text-slate-300">1 hour ago by You</div>
                 </div>
               </div>
             ) : (
