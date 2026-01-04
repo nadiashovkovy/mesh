@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Share2, Search, Menu } from 'lucide-react';
+import { Plus, Share2, Search, Menu, Filter } from 'lucide-react';
 
 export default function TopBar({ onToggleSidebar, onSearch, searchQuery }) {
   const collaborators = [
@@ -18,22 +18,30 @@ export default function TopBar({ onToggleSidebar, onSearch, searchQuery }) {
         >
           <Menu size={20} />
         </button>
-        <div className="relative flex-1 max-w-md">
-          <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" />
-          <input
-            type="text"
-            placeholder="Search notes, concepts, team..."
-            className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:border-cyan-400 outline-none transition"
-            value={searchQuery}
-            onChange={(e) => onSearch(e.target.value)}
-          />
+        <div className="flex items-center gap-2 flex-1 max-w-md">
+          <div className="relative flex-1">
+            <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" />
+            <input
+              type="text"
+              placeholder="Search titles, content, team..."
+              className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:border-cyan-400 outline-none transition"
+              value={searchQuery}
+              onChange={(e) => onSearch(e.target.value)}
+            />
+          </div>
+          <button
+            className="p-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 hover:border-cyan-400 transition"
+            title="Filter"
+          >
+            <Filter size={18} className="text-slate-400" />
+          </button>
         </div>
       </div>
 
       <div className="flex items-center gap-2">
         <button className="flex items-center gap-2 px-4 py-2 bg-purple-500 rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition font-medium text-sm hover:scale-105">
           <Plus size={18} />
-          <span className="hidden md:inline">New Note</span>
+          <span className="hidden md:inline">New Node</span>
         </button>
 
         <button className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition text-sm">

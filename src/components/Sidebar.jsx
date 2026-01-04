@@ -49,7 +49,7 @@ export default function Sidebar({ isOpen, onToggle, onWorkspaceChange }) {
   return (
     <div className={`${isOpen ? 'w-64' : 'w-20'} bg-gradient-to-b from-slate-900 to-black border-r border-slate-800 flex flex-col transition-all duration-300 sticky top-0 h-screen`}>
       {/* Logo */}
-      <div className={`p-4 border-b border-slate-800 flex items-center gap-3 ${!isOpen ? 'justify-center' : ''}`}>
+      <div className={`h-16 px-4 border-b border-slate-800 flex items-center gap-3 ${!isOpen ? 'justify-center' : ''}`}>
         <img 
           src="/assets/MeshLogo.png" 
           alt="Mesh Logo" 

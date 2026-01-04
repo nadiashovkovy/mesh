@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { Plus, ZoomIn, ZoomOut, Maximize, Minimize, Sparkles, GitBranch, Palette, Share2, MoreVertical } from 'lucide-react';
+import { Plus, ZoomIn, ZoomOut, Maximize, Minimize, Sparkles, GitBranch, Palette, Share2, MoreVertical, Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import NoteCard from './Notecard';
 import CollaborationIndicator from './CollaborationIndicator';
 import RightPanel from './RightPanel';
 
-const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle }, ref) => {
+const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery }, ref) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [notePositions, setNotePositions] = useState({});
+  const [searchBarCollapsed, setSearchBarCollapsed] = useState(false);
   const canvasRef = useRef(null);
   const isPinching = useRef(false);
   const lastDistance = useRef(0);
@@ -204,7 +205,7 @@ const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, on
   };
 
   const actionMenuItems = [
-    { icon: Plus, label: 'New Note', onClick: () => console.log('New Note') },
+    { icon: Plus, label: 'New Node', onClick: () => console.log('New Node') },
     { icon: isFullscreen ? Minimize : Maximize, label: isFullscreen ? 'Exit Fullscreen' : 'Fullscreen', onClick: toggleFullscreen },
     { icon: GitBranch, label: 'Simplify', onClick: () => console.log('Simplify') },
     { icon: Sparkles, label: 'AI Overview', onClick: () => console.log('AI Overview') },
@@ -270,6 +271,51 @@ const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, on
           transformOrigin: 'top left',
         }}
       ></div>
+
+      {/* Floating Search Bar (only in fullscreen) */}
+      {isFullscreen && (
+        <div className="absolute top-8 left-8 z-[60] transition-all duration-300">
+          <div className="bg-slate-900/95 backdrop-blur-sm rounded-2xl border border-slate-800 shadow-2xl overflow-hidden">
+            {/* Collapse/Expand Button */}
+            <button
+              onClick={() => setSearchBarCollapsed(!searchBarCollapsed)}
+              className="w-full flex items-center justify-between px-4 py-2 hover:bg-slate-800/50 transition"
+            >
+              <div className="flex items-center gap-2">
+                <Search size={16} className="text-slate-400" />
+                <span className="text-sm text-slate-400">Search</span>
+              </div>
+              {searchBarCollapsed ? (
+                <ChevronDown size={16} className="text-slate-400" />
+              ) : (
+                <ChevronUp size={16} className="text-slate-400" />
+              )}
+            </button>
+            
+            {/* Search Input Section */}
+            {!searchBarCollapsed && (
+              <div className="flex items-center gap-2 px-4 pb-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="relative flex-1">
+                  <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" />
+                  <input
+                    type="text"
+                    placeholder="Search titles, content..."
+                    className="w-80 pl-9 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:border-cyan-400 outline-none transition"
+                    value={searchQuery}
+                    onChange={(e) => onSearch(e.target.value)}
+                  />
+                </div>
+                <button
+                  className="p-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 hover:border-cyan-400 transition"
+                  title="Filter"
+                >
+                  <Filter size={16} className="text-slate-400" />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Canvas Content */}
       <div className="relative p-8 h-full overflow-auto scrollbar-hide">

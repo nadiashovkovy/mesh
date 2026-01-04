@@ -113,7 +113,7 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, onToggl
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Note Details</div>
+            <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Node Details</div>
             {selectedNote ? (
               <div className="space-y-3">
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
@@ -131,7 +131,7 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, onToggl
                       )}
                     </button>
                   </div>
-                  <div className="text-sm font-medium text-cyan-400">{selectedNote.title}</div>
+                  <div className="text-sm font-medium text-slate-300">{selectedNote.title}</div>
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                   <div className="flex items-center justify-between mb-2">
@@ -152,7 +152,7 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, onToggl
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                   <div className="text-xs text-slate-400 mb-1">Connections</div>
-                  <div className="text-sm text-slate-300">{selectedNote.connections} linked notes</div>
+                  <div className="text-sm text-slate-300">{selectedNote.connections} linked nodes</div>
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                   <div className="text-xs text-slate-400 mb-1">Created</div>
@@ -164,7 +164,7 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, onToggl
                 </div>
               </div>
             ) : (
-              <div className="text-slate-400 text-sm">Select a note to view details</div>
+              <div className="text-slate-400 text-sm">Select a node to view details</div>
             )}
           </div>
         )}

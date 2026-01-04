@@ -166,6 +166,8 @@ export default function Dashboard() {
             onFullscreenChange={setIsFullscreen}
             rightPanelOpen={rightPanelOpen}
             onRightPanelToggle={() => setRightPanelOpen(!rightPanelOpen)}
+            onSearch={handleSearch}
+            searchQuery={searchQuery}
           />
           {!isFullscreen && (
             <RightPanel 
