@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Lock, Unlock } from 'lucide-react';
 
-export default function NoteCard({ id, title, description, connections, color, isSelected, onClick, position, onPositionChange, selectedNodes, allNotePositions, onGroupPositionChange, zoom = 1, pan = { x: 0, y: 0 } }) {
+export default function NoteCard({ id, title, description, connectedTo, color, isSelected, onClick, position, onPositionChange, selectedNodes, allNotePositions, onGroupPositionChange, zoom = 1, pan = { x: 0, y: 0 }, onStartConnection, onEndConnection, onCancelConnection, isConnecting }) {
   const [isLocked, setIsLocked] = useState(false);
+  const [showConnectionMenu, setShowConnectionMenu] = useState(false);
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
   const groupDragStartPositions = useRef({});
@@ -17,6 +18,7 @@ export default function NoteCard({ id, title, description, connections, color, i
 
   const handleMouseDown = (e) => {
     if (isLocked || e.target.closest('button')) return;
+    
     isDraggingRef.current = true;
     
     // Store the offset from mouse to card position in canvas space
@@ -40,6 +42,19 @@ export default function NoteCard({ id, title, description, connections, color, i
     
     e.preventDefault();
     e.stopPropagation();
+  };
+
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowConnectionMenu(true);
+  };
+
+  const handleClick = (e) => {
+    // If another node is in connection mode and we're clicking this node, complete the connection
+    // The parent Canvas tracks which node is connecting via isConnecting prop
+    // We just call onClick normally, and Canvas will handle it
+    onClick?.(e);
   };
 
   useEffect(() => {
@@ -72,7 +87,7 @@ export default function NoteCard({ id, title, description, connections, color, i
       }
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e) => {
       isDraggingRef.current = false;
       groupDragStartPositions.current = {};
     };
@@ -84,7 +99,7 @@ export default function NoteCard({ id, title, description, connections, color, i
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [id, isLocked, onPositionChange, selectedNodes, position, allNotePositions, onGroupPositionChange, zoom]);
+  }, [id, isLocked, onPositionChange, selectedNodes, position, allNotePositions, onGroupPositionChange, zoom, isConnecting, onEndConnection, onCancelConnection]);
 
   const toggleLock = (e) => {
     e.stopPropagation();
@@ -94,10 +109,14 @@ export default function NoteCard({ id, title, description, connections, color, i
   return (
     <div
       ref={cardRef}
-      onClick={onClick}
+      data-nodeid={id}
+      onClick={handleClick}
       onMouseDown={handleMouseDown}
+      onContextMenu={handleContextMenu}
       className={`notecard w-80 p-6 backdrop-blur border-2 rounded-xl select-none ${
         isLocked ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'
+      } ${
+        isConnecting ? 'ring-4 ring-cyan-400 ring-opacity-50' : ''
       } ${
         isSelected 
           ? 'bg-slate-800/90 border-cyan-400 shadow-2xl shadow-cyan-400/30 ring-2 ring-cyan-400/20 scale-105 transition-all duration-300' 
@@ -112,24 +131,39 @@ export default function NoteCard({ id, title, description, connections, color, i
     >
       <div className="flex items-start justify-between mb-3">
         <div className={`text-2xl font-bold ${badgeColor} px-3 py-1 rounded`}>#{id}</div>
-        <button
-          onClick={toggleLock}
-          className="p-1 hover:bg-slate-700/50 rounded transition"
-          title={isLocked ? 'Unlock position' : 'Lock position'}
-        >
-          {isLocked ? (
-            <Lock size={16} className="text-slate-400" />
-          ) : (
-            <Unlock size={16} className="text-slate-500" />
+        <div className="flex gap-1">
+          {showConnectionMenu && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onStartConnection?.(id);
+                setShowConnectionMenu(false);
+              }}
+              className="px-2 py-1 text-xs bg-cyan-500 hover:bg-cyan-600 rounded transition"
+              title="Form Connection"
+            >
+              Connect
+            </button>
           )}
-        </button>
+          <button
+            onClick={toggleLock}
+            className="p-1 hover:bg-slate-700/50 rounded transition"
+            title={isLocked ? 'Unlock position' : 'Lock position'}
+          >
+            {isLocked ? (
+              <Lock size={16} className="text-slate-400" />
+            ) : (
+              <Unlock size={16} className="text-slate-500" />
+            )}
+          </button>
+        </div>
       </div>
 
       <h3 className="font-semibold text-lg mb-2 text-white">{title}</h3>
       <p className="text-sm text-slate-300 mb-4 line-clamp-2">{description}</p>
 
       <div className="flex items-center justify-between pt-4 border-t border-slate-700">
-        <div className="text-xs text-slate-400">{connections} connections</div>
+        <div className="text-xs text-slate-400">{connectedTo.length} connections</div>
         <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${gradientColor}`}></div>
       </div>
     </div>

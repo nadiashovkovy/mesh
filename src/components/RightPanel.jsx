@@ -166,7 +166,7 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, onToggl
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                   <div className="text-xs text-slate-400 mb-1">Connections</div>
-                  <div className="text-sm text-slate-300">{selectedNote.connections} linked nodes</div>
+                  <div className="text-sm text-slate-300">{selectedNote.connectedTo?.length || 0} linked nodes</div>
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                   <div className="text-xs text-slate-400 mb-1">Created</div>

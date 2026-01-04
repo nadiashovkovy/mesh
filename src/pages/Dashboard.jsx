@@ -22,7 +22,7 @@ export default function Dashboard() {
         id: 1,
         title: 'Research Question: Climate Impact',
         description: 'How do carbon emissions affect global temperatures? Initial hypothesis testing...',
-        connections: 3,
+        connectedTo: [2],
         color: 'cyan',
         offset: 'translate-x-0 translate-y-0',
       },
@@ -30,7 +30,7 @@ export default function Dashboard() {
         id: 2,
         title: 'Data: Temperature Records 1980-2024',
         description: 'Average global temperature increase: 1.1°C over 44 years',
-        connections: 5,
+        connectedTo: [3],
         color: 'purple',
         offset: 'translate-x-96 translate-y-0',
       },
@@ -38,7 +38,7 @@ export default function Dashboard() {
         id: 3,
         title: 'Analysis: Correlation Study',
         description: 'Strong positive correlation (r=0.89) between CO2 and temperature',
-        connections: 7,
+        connectedTo: [],
         color: 'cyan',
         offset: 'translate-x-52 translate-y-96',
       },
@@ -48,7 +48,7 @@ export default function Dashboard() {
         id: 1,
         title: 'UI/UX Principles',
         description: 'Core design principles for user interface and experience',
-        connections: 4,
+        connectedTo: [2],
         color: 'purple',
         offset: 'translate-x-0 translate-y-0',
       },
@@ -56,7 +56,7 @@ export default function Dashboard() {
         id: 2,
         title: 'Design System Components',
         description: 'Reusable components library and design tokens',
-        connections: 6,
+        connectedTo: [3],
         color: 'cyan',
         offset: 'translate-x-96 translate-y-0',
       },
@@ -64,7 +64,7 @@ export default function Dashboard() {
         id: 3,
         title: 'User Research Findings',
         description: 'Key insights from user interviews and testing sessions',
-        connections: 5,
+        connectedTo: [],
         color: 'purple',
         offset: 'translate-x-48 translate-y-80',
       },
@@ -74,7 +74,7 @@ export default function Dashboard() {
         id: 1,
         title: 'Market Analysis Q1 2026',
         description: 'Competitive landscape and market opportunities',
-        connections: 4,
+        connectedTo: [2],
         color: 'cyan',
         offset: 'translate-x-0 translate-y-0',
       },
@@ -82,7 +82,7 @@ export default function Dashboard() {
         id: 2,
         title: 'Product Roadmap',
         description: 'Feature prioritization and release timeline',
-        connections: 8,
+        connectedTo: [3],
         color: 'purple',
         offset: 'translate-x-96 translate-y-0',
       },
@@ -90,7 +90,7 @@ export default function Dashboard() {
         id: 3,
         title: 'Customer Feedback Summary',
         description: 'Top requested features and pain points',
-        connections: 3,
+        connectedTo: [],
         color: 'cyan',
         offset: 'translate-x-52 translate-y-96',
       },
@@ -187,7 +187,7 @@ export default function Dashboard() {
       id: newId,
       title: 'New Node',
       description: 'Click to add description...',
-      connections: 0,
+      connectedTo: [],
       color: newId % 2 === 0 ? 'purple' : 'cyan',
       offset: 'translate-x-0 translate-y-0',
     };
@@ -213,7 +213,23 @@ export default function Dashboard() {
       [currentWorkspace.id]: updatedNotes
     });
   };
+  const handleAddConnection = (fromId, toId) => {
+    const currentWorkspaceNotes = workspaceNotes[currentWorkspace.id] || [];
+    const updatedNotes = currentWorkspaceNotes.map(note => {
+      if (note.id === fromId) {
+        const connectedTo = note.connectedTo || [];
+        if (!connectedTo.includes(toId)) {
+          return { ...note, connectedTo: [...connectedTo, toId] };
+        }
+      }
+      return note;
+    });
 
+    setWorkspaceNotes({
+      ...workspaceNotes,
+      [currentWorkspace.id]: updatedNotes
+    });
+  };
   return (
     <div className="flex h-screen bg-black text-white font-sans">
       {/* Sidebar */}
@@ -253,6 +269,7 @@ export default function Dashboard() {
             currentSearchIndex={currentSearchIndex}
             onSearchNavigate={handleSearchNavigate}
             onUpdateNote={handleUpdateNode}
+            onAddConnection={handleAddConnection}
           />
           {!isFullscreen && (
             <RightPanel 

@@ -4,12 +4,13 @@ import NoteCard from './Notecard';
 import CollaborationIndicator from './CollaborationIndicator';
 import RightPanel from './RightPanel';
 
-const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery, searchResultsCount = 0, currentSearchIndex = 0, onSearchNavigate, onUpdateNote }, ref) => {
+const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery, searchResultsCount = 0, currentSearchIndex = 0, onSearchNavigate, onUpdateNote, onAddConnection }, ref) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [notePositions, setNotePositions] = useState({});
   const [searchBarCollapsed, setSearchBarCollapsed] = useState(false);
+  const [connectingFrom, setConnectingFrom] = useState(null);
   const fullscreenSearchInputRef = useRef(null);
   const canvasRef = useRef(null);
   const isPinching = useRef(false);
@@ -66,20 +67,61 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
     }
   }));
 
-  // Initialize random positions for notecards
+  // Initialize positions for new notecards only
   useEffect(() => {
-    const initialPositions = {};
-    notes.forEach((note, index) => {
-      // Create scattered positions in a grid-like pattern with randomness
-      const col = index % 3;
-      const row = Math.floor(index / 3);
-      initialPositions[note.id] = {
-        x: col * 400 + Math.random() * 100,
-        y: row * 300 + Math.random() * 100
-      };
+    setNotePositions(prev => {
+      const newPositions = { ...prev };
+      const cardWidth = 320;
+      const cardHeight = 200;
+      const minDistance = 400; // Minimum distance between nodes
+      
+      notes.forEach((note) => {
+        // Only add position if this note doesn't have one yet
+        if (!newPositions[note.id]) {
+          // Find a position that doesn't overlap with existing nodes
+          let attempts = 0;
+          let validPosition = null;
+          
+          while (!validPosition && attempts < 50) {
+            // Start with a grid-like pattern and add randomness
+            const existingCount = Object.keys(newPositions).length;
+            const col = existingCount % 3;
+            const row = Math.floor(existingCount / 3);
+            
+            const candidateX = col * 450 + Math.random() * 150;
+            const candidateY = row * 350 + Math.random() * 150;
+            
+            // Check if this position is far enough from all existing nodes
+            const isFarEnough = Object.values(newPositions).every(pos => {
+              const dx = pos.x - candidateX;
+              const dy = pos.y - candidateY;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              return distance >= minDistance;
+            });
+            
+            if (isFarEnough || Object.keys(newPositions).length === 0) {
+              validPosition = { x: candidateX, y: candidateY };
+            }
+            
+            attempts++;
+          }
+          
+          // If we couldn't find a valid position after 50 attempts, place it far to the right
+          if (!validPosition) {
+            const existingCount = Object.keys(newPositions).length;
+            validPosition = {
+              x: existingCount * 450,
+              y: Math.random() * 200
+            };
+          }
+          
+          newPositions[note.id] = validPosition;
+        }
+      });
+      
+      return newPositions;
     });
-    setNotePositions(initialPositions);
-  }, [notes.length]);
+  }, [notes]);
 
   // Keyboard shortcuts for zoom
   useEffect(() => {
@@ -331,34 +373,60 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
     const cardWidth = 320; // w-80 = 320px
     const cardHeight = 180; // approximate height
     
-    // Create connections between sequential notes
-    for (let i = 0; i < notes.length - 1; i++) {
-      const fromNote = notes[i];
-      const toNote = notes[i + 1];
+    // Create lines based on connectedTo arrays
+    notes.forEach((fromNote) => {
       const fromPos = notePositions[fromNote.id];
-      const toPos = notePositions[toNote.id];
+      const connectedTo = fromNote.connectedTo || [];
       
-      if (fromPos && toPos) {
-        // Calculate center points of each card
-        const x1 = fromPos.x + cardWidth / 2;
-        const y1 = fromPos.y + cardHeight / 2;
-        const x2 = toPos.x + cardWidth / 2;
-        const y2 = toPos.y + cardHeight / 2;
+      connectedTo.forEach((toId) => {
+        const toNote = notes.find(n => n.id === toId);
+        const toPos = notePositions[toId];
         
-        // Calculate control point for curve (midpoint with offset)
-        const midX = (x1 + x2) / 2;
-        const midY = (y1 + y2) / 2;
-        const offsetY = Math.abs(x2 - x1) * 0.2;
-        
-        lines.push({
-          id: `${fromNote.id}-${toNote.id}`,
-          d: `M ${x1} ${y1} Q ${midX} ${midY - offsetY} ${x2} ${y2}`,
-          color: fromNote.color
-        });
-      }
-    }
+        if (fromPos && toPos && toNote) {
+          // Calculate center points of each card
+          const x1 = fromPos.x + cardWidth / 2;
+          const y1 = fromPos.y + cardHeight / 2;
+          const x2 = toPos.x + cardWidth / 2;
+          const y2 = toPos.y + cardHeight / 2;
+          
+          lines.push({
+            id: `${fromNote.id}-${toId}`,
+            d: `M ${x1} ${y1} L ${x2} ${y2}`,
+            color: fromNote.color
+          });
+        }
+      });
+    });
     
     return lines;
+  };
+
+  const handleStartConnection = (nodeId) => {
+    setConnectingFrom(nodeId);
+  };
+
+  const handleEndConnection = (toNodeId) => {
+    if (connectingFrom && connectingFrom !== toNodeId) {
+      onAddConnection?.(connectingFrom, toNodeId);
+    }
+    setConnectingFrom(null);
+  };
+
+  const handleCancelConnection = () => {
+    setConnectingFrom(null);
+  };
+
+  const handleNoteClick = (noteId, isShiftKey) => {
+    // If we're in connection mode, complete the connection
+    if (connectingFrom) {
+      if (connectingFrom !== noteId) {
+        handleEndConnection(noteId);
+      }
+      return;
+    }
+    
+    // Otherwise, normal selection behavior
+    onSelectNode(noteId, isShiftKey);
   };
 
   return (
@@ -461,9 +529,14 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
       <div className="relative h-full overflow-hidden">
         {/* Connection Lines - Behind notecards */}
         <svg 
-          className="absolute inset-0 w-full h-full pointer-events-none" 
+          className="absolute pointer-events-none" 
           style={{ 
             opacity: 0.5,
+            left: 0,
+            top: 0,
+            width: '100%',
+            height: '100%',
+            overflow: 'visible',
             transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
             transformOrigin: 'top left',
           }}
@@ -502,10 +575,10 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
               id={note.id}
               title={note.title}
               description={note.description}
-              connections={note.connections}
+              connectedTo={note.connectedTo || []}
               color={note.color}
               isSelected={selectedNodes && selectedNodes.includes(note.id)}
-              onClick={(e) => onSelectNode(note.id, e.shiftKey)}
+              onClick={(e) => handleNoteClick(note.id, e.shiftKey)}
               position={notePositions[note.id]}
               onPositionChange={handlePositionChange}
               selectedNodes={selectedNodes}
@@ -513,6 +586,10 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
               onGroupPositionChange={setNotePositions}
               zoom={zoom}
               pan={pan}
+              onStartConnection={handleStartConnection}
+              onEndConnection={handleEndConnection}
+              onCancelConnection={handleCancelConnection}
+              isConnecting={connectingFrom === note.id}
             />
           ))}
         </div>
