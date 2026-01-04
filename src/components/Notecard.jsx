@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Lock, Unlock } from 'lucide-react';
 
-export default function NoteCard({ id, title, description, connectedTo, allNotes, color, isSelected, onClick, position, onPositionChange, selectedNodes, allNotePositions, onGroupPositionChange, onPositionChangeComplete, zoom = 1, pan = { x: 0, y: 0 }, onStartConnection, onEndConnection, onCancelConnection, isConnecting, onCopy, isSimplified = false }) {
+export default function NoteCard({ id, title, description, connectedTo, allNotes, color, isSelected, onClick, position, onPositionChange, selectedNodes, allNotePositions, onGroupPositionChange, onPositionChangeComplete, zoom = 1, pan = { x: 0, y: 0 }, onStartConnection, onEndConnection, onCancelConnection, isConnecting, onCopy, onDelete, isSimplified = false }) {
   const [isLocked, setIsLocked] = useState(false);
   const [showFloatingMenu, setShowFloatingMenu] = useState(false);
   const isDraggingRef = useRef(false);
@@ -184,6 +184,17 @@ export default function NoteCard({ id, title, description, connectedTo, allNotes
             title={isLocked ? 'Unlock position' : 'Lock position'}
           >
             {isLocked ? 'Unlock' : 'Lock'}
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete?.(id);
+              setShowFloatingMenu(false);
+            }}
+            className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-red-600 rounded transition text-slate-200 w-full text-left"
+            title="Delete node"
+          >
+            Delete
           </button>
         </div>
       )}

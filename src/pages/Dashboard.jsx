@@ -381,6 +381,37 @@ export default function Dashboard() {
     })));
   };
 
+  const handleDeleteNode = (nodeId) => {
+    saveToHistory();
+    
+    const currentWorkspaceNotes = workspaceNotes[currentWorkspace.id] || [];
+    
+    // Remove the node
+    const updatedNotes = currentWorkspaceNotes.filter(note => note.id !== nodeId);
+    
+    // Remove connections to this node from other nodes
+    const notesWithUpdatedConnections = updatedNotes.map(note => ({
+      ...note,
+      connectedTo: (note.connectedTo || []).filter(id => id !== nodeId)
+    }));
+    
+    setWorkspaceNotes({
+      ...workspaceNotes,
+      [currentWorkspace.id]: notesWithUpdatedConnections
+    });
+    
+    // Remove position data
+    const newPositions = { ...notePositions };
+    delete newPositions[nodeId];
+    setNotePositions(newPositions);
+    
+    // Clear selection if deleted node was selected
+    setSelectedNodes(prev => prev.filter(id => id !== nodeId));
+    if (selectedNodes.includes(nodeId) && selectedNodes.length === 1) {
+      setRightPanelOpen(false);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-black text-white font-sans">
       {/* Sidebar */}
@@ -425,6 +456,7 @@ export default function Dashboard() {
             onPositionUpdate={handlePositionUpdate}
             onPositionChangeComplete={handlePositionChangeComplete}
             onCopyNode={handleCopyNode}
+            onDeleteNode={handleDeleteNode}
           />
           {!isFullscreen && (
             <RightPanel 

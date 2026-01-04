@@ -4,7 +4,7 @@ import NoteCard from './Notecard';
 import CollaborationIndicator from './CollaborationIndicator';
 import RightPanel from './RightPanel';
 
-const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery, searchResultsCount = 0, currentSearchIndex = 0, onSearchNavigate, onUpdateNote, onAddConnection, notePositions: externalPositions, onPositionUpdate, onPositionChangeComplete, onCopyNode }, ref) => {
+const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery, searchResultsCount = 0, currentSearchIndex = 0, onSearchNavigate, onUpdateNote, onAddConnection, notePositions: externalPositions, onPositionUpdate, onPositionChangeComplete, onCopyNode, onDeleteNode }, ref) => {
   const [zoom, setZoom] = useState(.5);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [showActionMenu, setShowActionMenu] = useState(false);
@@ -606,6 +606,7 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
               onCancelConnection={handleCancelConnection}
               isConnecting={connectingFrom === note.id}
               onCopy={onCopyNode}
+              onDelete={onDeleteNode}
               isSimplified={isSimplified}
             />
           ))}
