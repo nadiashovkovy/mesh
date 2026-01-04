@@ -453,10 +453,10 @@ export default function LandingPage() {
             Start free. No credit card required. Collaborate in seconds.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="px-8 py-4 bg-purple-500 rounded-lg hover:opacity-90 transition font-medium text-lg flex items-center gap-2">
+            <Link to="/app" className="px-8 py-4 bg-purple-500 rounded-lg hover:opacity-90 transition font-medium text-lg flex items-center gap-2">
               Get Started Free
               <ArrowRight size={20} />
-            </button>
+            </Link>
             <button className="px-8 py-4 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition font-medium text-lg">
               Schedule Demo
             </button>
