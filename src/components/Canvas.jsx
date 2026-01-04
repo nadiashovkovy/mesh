@@ -4,11 +4,11 @@ import NoteCard from './Notecard';
 import CollaborationIndicator from './CollaborationIndicator';
 import RightPanel from './RightPanel';
 
-const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery, searchResultsCount = 0, currentSearchIndex = 0, onSearchNavigate, onUpdateNote, onAddConnection }, ref) => {
+const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery, searchResultsCount = 0, currentSearchIndex = 0, onSearchNavigate, onUpdateNote, onAddConnection, notePositions: externalPositions, onPositionUpdate, onPositionChangeComplete }, ref) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [showActionMenu, setShowActionMenu] = useState(false);
-  const [notePositions, setNotePositions] = useState({});
+  const [notePositions, setNotePositions] = useState(externalPositions || {});
   const [searchBarCollapsed, setSearchBarCollapsed] = useState(false);
   const [connectingFrom, setConnectingFrom] = useState(null);
   const fullscreenSearchInputRef = useRef(null);
@@ -23,6 +23,13 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
   const MIN_ZOOM = .1;
   const MAX_ZOOM = 2;
   const ZOOM_STEP = 0.1;
+
+  // Sync with external positions when they change (from undo/redo)
+  useEffect(() => {
+    if (externalPositions && Object.keys(externalPositions).length > 0) {
+      setNotePositions(externalPositions);
+    }
+  }, [externalPositions]);
 
   // Expose panToNote method to parent
   useImperativeHandle(ref, () => ({
@@ -361,13 +368,18 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
   ];
 
   const handlePositionChange = (noteId, position) => {
-    setNotePositions(prev => ({
-      ...prev,
+    const newPositions = {
+      ...notePositions,
       [noteId]: position
-    }));
+    };
+    setNotePositions(newPositions);
+    onPositionUpdate?.(newPositions);
   };
 
-  // Calculate connection lines between notecards
+  const handleGroupPositionChange = (newPositions) => {
+    setNotePositions(newPositions);
+    onPositionUpdate?.(newPositions);
+  };
   const getConnectionLines = () => {
     const lines = [];
     const cardWidth = 320; // w-80 = 320px
@@ -576,6 +588,7 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
               title={note.title}
               description={note.description}
               connectedTo={note.connectedTo || []}
+              allNotes={notes}
               color={note.color}
               isSelected={selectedNodes && selectedNodes.includes(note.id)}
               onClick={(e) => handleNoteClick(note.id, e.shiftKey)}
@@ -583,7 +596,8 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
               onPositionChange={handlePositionChange}
               selectedNodes={selectedNodes}
               allNotePositions={notePositions}
-              onGroupPositionChange={setNotePositions}
+              onGroupPositionChange={handleGroupPositionChange}
+              onPositionChangeComplete={onPositionChangeComplete}
               zoom={zoom}
               pan={pan}
               onStartConnection={handleStartConnection}

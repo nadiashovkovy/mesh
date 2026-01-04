@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Lock, Unlock } from 'lucide-react';
 
-export default function NoteCard({ id, title, description, connectedTo, color, isSelected, onClick, position, onPositionChange, selectedNodes, allNotePositions, onGroupPositionChange, zoom = 1, pan = { x: 0, y: 0 }, onStartConnection, onEndConnection, onCancelConnection, isConnecting }) {
+export default function NoteCard({ id, title, description, connectedTo, allNotes, color, isSelected, onClick, position, onPositionChange, selectedNodes, allNotePositions, onGroupPositionChange, onPositionChangeComplete, zoom = 1, pan = { x: 0, y: 0 }, onStartConnection, onEndConnection, onCancelConnection, isConnecting }) {
   const [isLocked, setIsLocked] = useState(false);
   const [showConnectionMenu, setShowConnectionMenu] = useState(false);
   const isDraggingRef = useRef(false);
@@ -15,6 +15,9 @@ export default function NoteCard({ id, title, description, connectedTo, color, i
   const gradientColor = color === 'cyan' 
     ? 'from-cyan-400 to-cyan-600' 
     : 'from-purple-400 to-purple-600';
+
+  // Calculate total connections (outgoing + incoming)
+  const totalConnections = connectedTo.length + (allNotes?.filter(n => n.connectedTo?.includes(id)).length || 0);
 
   const handleMouseDown = (e) => {
     if (isLocked || e.target.closest('button')) return;
@@ -88,6 +91,9 @@ export default function NoteCard({ id, title, description, connectedTo, color, i
     };
 
     const handleMouseUp = (e) => {
+      if (isDraggingRef.current) {
+        onPositionChangeComplete?.();
+      }
       isDraggingRef.current = false;
       groupDragStartPositions.current = {};
     };
@@ -163,7 +169,7 @@ export default function NoteCard({ id, title, description, connectedTo, color, i
       <p className="text-sm text-slate-300 mb-4 line-clamp-2">{description}</p>
 
       <div className="flex items-center justify-between pt-4 border-t border-slate-700">
-        <div className="text-xs text-slate-400">{connectedTo.length} connections</div>
+        <div className="text-xs text-slate-400">{totalConnections} connections</div>
         <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${gradientColor}`}></div>
       </div>
     </div>

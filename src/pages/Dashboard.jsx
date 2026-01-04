@@ -13,6 +13,9 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [notePositions, setNotePositions] = useState({});
   const canvasRef = useRef(null);
 
   // Workspace-specific notes - now using state
@@ -99,6 +102,68 @@ export default function Dashboard() {
 
   const currentNotes = workspaceNotes[currentWorkspace.id] || [];
 
+  // Initialize history with current state on mount
+  useEffect(() => {
+    if (history.length === 0) {
+      const initialSnapshot = {
+        workspaceNotes: JSON.parse(JSON.stringify(workspaceNotes)),
+        notePositions: JSON.parse(JSON.stringify(notePositions))
+      };
+      setHistory([initialSnapshot]);
+      setHistoryIndex(0);
+    }
+  }, []);
+
+  // Save current state to history
+  const saveToHistory = () => {
+    const snapshot = {
+      workspaceNotes: JSON.parse(JSON.stringify(workspaceNotes)),
+      notePositions: JSON.parse(JSON.stringify(notePositions))
+    };
+    
+    // Remove any future history if we're not at the end
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(snapshot);
+    
+    // Limit history to 50 items
+    if (newHistory.length > 50) {
+      newHistory.shift();
+    } else {
+      setHistoryIndex(historyIndex + 1);
+    }
+    
+    setHistory(newHistory);
+  };
+
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          // Redo
+          if (historyIndex < history.length - 1) {
+            const nextState = history[historyIndex + 1];
+            setWorkspaceNotes(nextState.workspaceNotes);
+            setNotePositions(nextState.notePositions);
+            setHistoryIndex(historyIndex + 1);
+          }
+        } else {
+          // Undo
+          if (historyIndex > 0) {
+            const previousState = history[historyIndex - 1];
+            setWorkspaceNotes(previousState.workspaceNotes);
+            setNotePositions(previousState.notePositions);
+            setHistoryIndex(historyIndex - 1);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [historyIndex, history]);
+
   // Update page title when workspace changes
   useEffect(() => {
     document.title = `${currentWorkspace.name} - Mesh`;
@@ -178,6 +243,8 @@ export default function Dashboard() {
   };
 
   const handleCreateNode = () => {
+    saveToHistory();
+    
     const currentWorkspaceNotes = workspaceNotes[currentWorkspace.id] || [];
     const newId = currentWorkspaceNotes.length > 0 
       ? Math.max(...currentWorkspaceNotes.map(n => n.id)) + 1 
@@ -214,6 +281,8 @@ export default function Dashboard() {
     });
   };
   const handleAddConnection = (fromId, toId) => {
+    saveToHistory();
+    
     const currentWorkspaceNotes = workspaceNotes[currentWorkspace.id] || [];
     const updatedNotes = currentWorkspaceNotes.map(note => {
       if (note.id === fromId) {
@@ -230,6 +299,16 @@ export default function Dashboard() {
       [currentWorkspace.id]: updatedNotes
     });
   };
+
+  const handlePositionUpdate = (positions) => {
+    setNotePositions(positions);
+  };
+
+  const handlePositionChangeComplete = () => {
+    // Save to history when position change is complete (on mouse up)
+    saveToHistory();
+  };
+
   return (
     <div className="flex h-screen bg-black text-white font-sans">
       {/* Sidebar */}
@@ -270,12 +349,16 @@ export default function Dashboard() {
             onSearchNavigate={handleSearchNavigate}
             onUpdateNote={handleUpdateNode}
             onAddConnection={handleAddConnection}
+            notePositions={notePositions}
+            onPositionUpdate={handlePositionUpdate}
+            onPositionChangeComplete={handlePositionChangeComplete}
           />
           {!isFullscreen && (
             <RightPanel 
               isOpen={rightPanelOpen} 
               selectedNode={selectedNodes.length === 1 ? selectedNodes[0] : null} 
               selectedNote={selectedNodes.length === 1 ? currentNotes.find(note => note.id === selectedNodes[0]) : null}
+              allNotes={currentNotes}
               onToggle={() => setRightPanelOpen(!rightPanelOpen)}
               isFullscreen={false}
               onUpdateNote={handleUpdateNode}

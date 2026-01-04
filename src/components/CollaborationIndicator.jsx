@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
 export default function CollaborationIndicator() {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   
   const collaborators = [
     { name: 'Emma', color: 'from-cyan-400 to-cyan-600' },

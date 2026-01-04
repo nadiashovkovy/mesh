@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Lock, ChevronLeft, ChevronRight, Copy, Check } from 'lucide-react';
 
-export default function RightPanel({ isOpen, selectedNode, selectedNote, onToggle, isFullscreen = false, onUpdateNote }) {
+export default function RightPanel({ isOpen, selectedNode, selectedNote, allNotes, onToggle, isFullscreen = false, onUpdateNote }) {
   const [activeTab, setActiveTab] = useState('graph');
   const [copiedField, setCopiedField] = useState(null);
+
+  // Calculate total connections (outgoing + incoming)
+  const getTotalConnections = (note) => {
+    if (!note || !allNotes) return 0;
+    const outgoing = note.connectedTo?.length || 0;
+    const incoming = allNotes.filter(n => n.connectedTo?.includes(note.id)).length;
+    return outgoing + incoming;
+  };
 
   // Switch to details tab when a node is selected
   useEffect(() => {
@@ -166,7 +174,7 @@ export default function RightPanel({ isOpen, selectedNode, selectedNote, onToggl
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                   <div className="text-xs text-slate-400 mb-1">Connections</div>
-                  <div className="text-sm text-slate-300">{selectedNote.connectedTo?.length || 0} linked nodes</div>
+                  <div className="text-sm text-slate-300">{getTotalConnections(selectedNote)} linked nodes</div>
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                   <div className="text-xs text-slate-400 mb-1">Created</div>
