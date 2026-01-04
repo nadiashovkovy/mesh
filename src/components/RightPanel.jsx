@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Eye, Lock, ChevronLeft, ChevronRight, Copy, Check } from 'lucide-react';
 
-export default function RightPanel({ isOpen, selectedNode, onToggle, isFullscreen = false }) {
+export default function RightPanel({ isOpen, selectedNode, selectedNote, onToggle, isFullscreen = false }) {
   const [activeTab, setActiveTab] = useState('graph');
+  const [copiedField, setCopiedField] = useState(null);
 
   // Switch to details tab when a node is selected
   useEffect(() => {
@@ -10,6 +11,12 @@ export default function RightPanel({ isOpen, selectedNode, onToggle, isFullscree
       setActiveTab('details');
     }
   }, [selectedNode, isOpen]);
+
+  const handleCopy = (text, field) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
 
   const concepts = [
     { label: 'Climate Change', connections: 12, color: 'from-cyan-400 to-cyan-600' },
@@ -36,7 +43,7 @@ export default function RightPanel({ isOpen, selectedNode, onToggle, isFullscree
         {isOpen ? <ChevronRight size={16} className="text-slate-400" /> : <ChevronLeft size={16} className="text-slate-400" />}
       </button>
 
-      <div className={`${isOpen ? 'w-80' : 'w-0'} ${isFullscreen ? 'h-full rounded-2xl shadow-2xl border border-slate-800' : ''} bg-slate-900/50 backdrop-blur ${!isFullscreen ? 'border-l border-slate-800' : ''} flex flex-col overflow-hidden transition-all duration-300`}>
+      <div className={`h-full ${isOpen ? 'w-80' : 'w-0'} ${isFullscreen ? 'rounded-2xl shadow-2xl border border-slate-800' : 'border-l border-slate-800'} bg-slate-900/50 backdrop-blur flex flex-col overflow-hidden transition-all duration-300`}>
       {isOpen && (
         <>
           {/* Tabs */}
@@ -107,11 +114,45 @@ export default function RightPanel({ isOpen, selectedNode, onToggle, isFullscree
         ) : (
           <div className="space-y-4">
             <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Note Details</div>
-            {selectedNode ? (
+            {selectedNote ? (
               <div className="space-y-3">
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
-                  <div className="text-xs text-slate-400 mb-1">Selected Node</div>
-                  <div className="text-sm font-medium text-cyan-400">Note #{selectedNode}</div>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="text-xs text-slate-400">Title</div>
+                    <button
+                      onClick={() => handleCopy(selectedNote.title, 'title')}
+                      className="p-1 hover:bg-slate-700 rounded transition"
+                      title="Copy title"
+                    >
+                      {copiedField === 'title' ? (
+                        <Check size={14} className="text-green-400" />
+                      ) : (
+                        <Copy size={14} className="text-slate-400 hover:text-cyan-400" />
+                      )}
+                    </button>
+                  </div>
+                  <div className="text-sm font-medium text-cyan-400">{selectedNote.title}</div>
+                </div>
+                <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs text-slate-400">Content</div>
+                    <button
+                      onClick={() => handleCopy(selectedNote.description, 'content')}
+                      className="p-1 hover:bg-slate-700 rounded transition"
+                      title="Copy content"
+                    >
+                      {copiedField === 'content' ? (
+                        <Check size={14} className="text-green-400" />
+                      ) : (
+                        <Copy size={14} className="text-slate-400 hover:text-cyan-400" />
+                      )}
+                    </button>
+                  </div>
+                  <div className="text-sm text-slate-300 leading-relaxed">{selectedNote.description}</div>
+                </div>
+                <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                  <div className="text-xs text-slate-400 mb-1">Connections</div>
+                  <div className="text-sm text-slate-300">{selectedNote.connections} linked notes</div>
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                   <div className="text-xs text-slate-400 mb-1">Created</div>

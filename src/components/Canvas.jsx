@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, ZoomIn, ZoomOut, Maximize, Minimize, Sparkles, GitBranch, Download, Share2, MoreVertical } from 'lucide-react';
+import { Plus, ZoomIn, ZoomOut, Maximize, Minimize, Sparkles, GitBranch, Palette, Share2, MoreVertical } from 'lucide-react';
 import NoteCard from './Notecard';
 import CollaborationIndicator from './CollaborationIndicator';
 import RightPanel from './RightPanel';
@@ -165,8 +165,7 @@ export default function Canvas({ selectedNode, onSelectNode, notes, isFullscreen
     { icon: isFullscreen ? Minimize : Maximize, label: isFullscreen ? 'Exit Fullscreen' : 'Fullscreen', onClick: toggleFullscreen },
     { icon: GitBranch, label: 'Simplify', onClick: () => console.log('Simplify') },
     { icon: Sparkles, label: 'AI Overview', onClick: () => console.log('AI Overview') },
-    { icon: Share2, label: 'Share', onClick: () => console.log('Share') },
-    { icon: Download, label: 'Export', onClick: () => console.log('Export') },
+    { icon: Palette, label: 'Change Theme', onClick: () => console.log('Change Theme') }
   ];
 
   const handlePositionChange = (noteId, position) => {
@@ -342,7 +341,7 @@ export default function Canvas({ selectedNode, onSelectNode, notes, isFullscreen
             ))}
           </div>
         ) : (
-          <button className="p-4 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full shadow-xl hover:shadow-2xl hover:shadow-purple-500/50 transition hover:scale-110">
+          <button className="p-4 bg-purple-500 rounded-full shadow-xl hover:shadow-2xl hover:shadow-purple-500/50 transition hover:scale-110">
             <MoreVertical size={24} className="text-white" />
           </button>
         )}
@@ -359,6 +358,7 @@ export default function Canvas({ selectedNode, onSelectNode, notes, isFullscreen
           <RightPanel 
             isOpen={rightPanelOpen} 
             selectedNode={selectedNode} 
+            selectedNote={notes.find(note => note.id === selectedNode)}
             onToggle={onRightPanelToggle}
             isFullscreen={true}
           />

@@ -147,6 +147,7 @@ export default function Dashboard() {
             <RightPanel 
               isOpen={rightPanelOpen} 
               selectedNode={selectedNode} 
+              selectedNote={currentNotes.find(note => note.id === selectedNode)}
               onToggle={() => setRightPanelOpen(!rightPanelOpen)}
               isFullscreen={false}
             />

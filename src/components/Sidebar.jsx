@@ -53,7 +53,7 @@ export default function Sidebar({ isOpen, onToggle, onWorkspaceChange }) {
         <img 
           src="/assets/MeshLogo.png" 
           alt="Mesh Logo" 
-          className="w-8 h-8"
+          className="w-5 h-5"
         />
         {isOpen && <span className="font-bold text-lg">Mesh</span>}
       </div>
