@@ -14,7 +14,7 @@ const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, on
   const isPinching = useRef(false);
   const lastDistance = useRef(0);
 
-  const MIN_ZOOM = 0.5;
+  const MIN_ZOOM = .1;
   const MAX_ZOOM = 2;
   const ZOOM_STEP = 0.1;
 
@@ -371,40 +371,39 @@ const Canvas = forwardRef(({ selectedNode, onSelectNode, notes, isFullscreen, on
             />
           ))}
         </div>
+      </div>
 
-        {/* Zoom Controls */}
-        <div className={`absolute flex flex-col gap-2 bg-slate-900/80 backdrop-blur-sm rounded-lg border border-slate-800 p-2 transition-all duration-300 ${
-          isFullscreen ? 'top-8' : 'top-4'
-        } ${
-          isFullscreen && rightPanelOpen ? 'right-96' : 'right-4'
-        }`}>
-          <button
-            onClick={handleZoomIn}
-            disabled={zoom >= MAX_ZOOM}
-            className="p-2 hover:bg-slate-800 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Zoom In (Cmd/Ctrl +)"
-          >
-            <ZoomIn size={20} className="text-slate-300" />
-          </button>
-          <div className="text-xs text-center text-slate-400 py-1">
-            {Math.round(zoom * 100)}%
-          </div>
-          <button
-            onClick={handleZoomOut}
-            disabled={zoom <= MIN_ZOOM}
-            className="p-2 hover:bg-slate-800 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Zoom Out (Cmd/Ctrl -)"
-          >
-            <ZoomOut size={20} className="text-slate-300" />
-          </button>
-          <button
-            onClick={handleResetZoom}
-            className="text-xs text-slate-400 hover:text-cyan-400 py-1 transition"
-            title="Reset Zoom (Cmd/Ctrl 0)"
-          >
-            Reset
-          </button>
-        </div>
+      {/* Zoom Controls - Fixed position outside scrollable area */}
+      <div className={`absolute flex flex-col gap-2 bg-slate-900/80 backdrop-blur-sm rounded-lg border border-slate-800 p-2 z-[60] transition-all duration-300 ${
+        isFullscreen && rightPanelOpen ? 'right-96' : 'right-8'
+      }`} style={{ bottom: '120px' }}>
+        <button
+          onClick={handleZoomIn}
+          disabled={zoom >= MAX_ZOOM}
+          className="p-2 hover:bg-slate-800 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Zoom In (Cmd/Ctrl +)"
+        >
+          <ZoomIn size={20} className="text-slate-300" />
+        </button>
+        {/* uncomment div below to show zoom percentage */}
+        {/* <div className="text-xs text-center text-slate-400 py-1">
+          {Math.round(zoom * 100)}%
+        </div> */}
+        <button
+          onClick={handleZoomOut}
+          disabled={zoom <= MIN_ZOOM}
+          className="p-2 hover:bg-slate-800 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Zoom Out (Cmd/Ctrl -)"
+        >
+          <ZoomOut size={20} className="text-slate-300" />
+        </button>
+        <button
+          onClick={handleResetZoom}
+          className="text-xs text-slate-400 hover:text-cyan-400 py-1 transition"
+          title="Reset Zoom (Cmd/Ctrl 0)"
+        >
+          Reset
+        </button>
       </div>
 
       {/* Floating Action Menu */}
