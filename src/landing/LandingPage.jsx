@@ -18,8 +18,8 @@ export default function LandingPage() {
             <a href="#pricing" className="text-slate-300 hover:text-white transition text-sm">Pricing</a>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/app" className="text-slate-300 hover:text-white transition text-sm">Sign In</Link>
-            <Link to="/app" className="px-4 py-2 bg-purple-500 rounded-full hover:opacity-90 transition font-medium text-sm flex items-center gap-2">
+            <Link to="/builder" className="text-slate-300 hover:text-white transition text-sm">Sign In</Link>
+            <Link to="/builder" className="px-4 py-2 bg-purple-500 rounded-full hover:opacity-90 transition font-medium text-sm flex items-center gap-2">
               Try for Free
               <ArrowRight size={16} />
             </Link>
@@ -48,7 +48,7 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <Link to="/app" className="px-8 py-4 bg-purple-500 rounded-lg hover:opacity-90 transition font-medium text-lg flex items-center gap-2">
+            <Link to="/builder" className="px-8 py-4 bg-purple-500 rounded-lg hover:opacity-90 transition font-medium text-lg flex items-center gap-2">
               Start Building Free
               <ArrowRight size={20} />
             </Link>
@@ -302,7 +302,7 @@ export default function LandingPage() {
                 </div>
               </div>
               
-              <Link to="/app" className="w-full py-3 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition font-medium text-center">
+              <Link to="/builder" className="w-full py-3 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition font-medium text-center">
                 Start for free
               </Link>
             </div>
@@ -348,7 +348,7 @@ export default function LandingPage() {
                 </div>
               </div>
               
-              <Link to="/app" className="w-full py-3 bg-purple-500 rounded-lg hover:opacity-90 transition font-medium text-center flex items-center justify-center gap-2">
+              <Link to="/builder" className="w-full py-3 bg-purple-500 rounded-lg hover:opacity-90 transition font-medium text-center flex items-center justify-center gap-2">
                 Start Pro trial
                 <ArrowRight size={16} />
               </Link>
@@ -396,7 +396,7 @@ export default function LandingPage() {
                 </div>
               </div>
               
-              <Link to="/app" className="w-full py-3 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition font-medium text-center flex items-center justify-center gap-2">
+              <Link to="/builder" className="w-full py-3 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition font-medium text-center flex items-center justify-center gap-2">
                 Start Team trial
                 <ArrowRight size={16} />
               </Link>
@@ -453,7 +453,7 @@ export default function LandingPage() {
             Start free. No credit card required. Collaborate in seconds.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/app" className="px-8 py-4 bg-purple-500 rounded-lg hover:opacity-90 transition font-medium text-lg flex items-center gap-2">
+            <Link to="/builder" className="px-8 py-4 bg-purple-500 rounded-lg hover:opacity-90 transition font-medium text-lg flex items-center gap-2">
               Get Started Free
               <ArrowRight size={20} />
             </Link>

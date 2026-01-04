@@ -8,7 +8,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/app" element={
+        <Route path="/builder" element={
           <div className="w-full h-screen overflow-hidden">
             <Dashboard />
           </div>
