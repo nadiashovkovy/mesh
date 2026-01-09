@@ -90,7 +90,14 @@ export default function NoteCard({ id, title, description, connectedTo, allNotes
 
     const handleMouseUp = (e) => {
       if (isDraggingRef.current) {
-        onPositionChangeComplete?.();
+        // Calculate final position
+        const deltaX = (e.clientX - dragStartRef.current.x) / zoom;
+        const deltaY = (e.clientY - dragStartRef.current.y) / zoom;
+        const finalX = dragStartRef.current.initialX + deltaX;
+        const finalY = dragStartRef.current.initialY + deltaY;
+        
+        // Notify position change is complete with the final position
+        onPositionChangeComplete?.(id, { x: finalX, y: finalY });
       }
       isDraggingRef.current = false;
       groupDragStartPositions.current = {};
@@ -198,22 +205,6 @@ export default function NoteCard({ id, title, description, connectedTo, allNotes
           </button>
         </div>
       )}
-      {/* to show id number and lock/unlock icon button, uncomment div below */}
-      {/* <div className="flex items-start justify-between mb-3">
-        <div className={`text-2xl font-bold ${badgeColor} px-3 py-1 rounded`}>#{id}</div>
-        <button
-          onClick={toggleLock}
-          className="p-1 hover:bg-slate-700/50 rounded transition"
-          title={isLocked ? 'Unlock position' : 'Lock position'}
-        >
-          {isLocked ? (
-            <Lock size={16} className="text-slate-400" />
-          ) : (
-            <Unlock size={16} className="text-slate-500" />
-          )}
-        </button>
-      </div> */}
-
       {isSimplified ? (
         /* Simplified view - title only centered */
         <div className="flex items-center justify-center h-full">
@@ -222,6 +213,19 @@ export default function NoteCard({ id, title, description, connectedTo, allNotes
       ) : (
         /* Full view with description and connections */
         <>
+          <div className="flex items-start justify-between mb-3">
+            <button
+              onClick={toggleLock}
+              className="p-1 hover:bg-slate-700/50 rounded transition"
+              title={isLocked ? 'Unlock position' : 'Lock position'}
+            >
+              {isLocked ? (
+                <Lock size={16} className="text-slate-400" />
+              ) : (
+                <Unlock size={16} className="text-slate-500" />
+              )}
+            </button>
+          </div>
           <h3 className="font-semibold text-lg mb-2 text-white">{title}</h3>
           <p className="text-sm text-slate-300 mb-4 line-clamp-2">{description}</p>
 

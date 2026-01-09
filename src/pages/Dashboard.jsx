@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [notePositions, setNotePositions] = useState({});
   const [copiedNodes, setCopiedNodes] = useState([]);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const [workspaceGroups, setWorkspaceGroups] = useState({});
   const canvasRef = useRef(null);
 
   // Workspace-specific notes - now using state
@@ -335,6 +336,29 @@ export default function Dashboard() {
     setRightPanelOpen(true);
   };
 
+  const handleCreateGroup = () => {
+    const currentGroups = workspaceGroups[currentWorkspace.id] || [];
+    const newId = currentGroups.length > 0 
+      ? Math.max(...currentGroups.map(g => g.id)) + 1 
+      : 1;
+    
+    const newGroup = {
+      id: newId,
+      label: 'New Group',
+      x: 200,
+      y: 200,
+      width: 400,
+      height: 300,
+      color: newId % 2 === 0 ? 'purple' : 'cyan',
+      nodeIds: []
+    };
+
+    setWorkspaceGroups({
+      ...workspaceGroups,
+      [currentWorkspace.id]: [...currentGroups, newGroup]
+    });
+  };
+
   const handleUpdateNode = (nodeId, updates) => {
     const currentWorkspaceNotes = workspaceNotes[currentWorkspace.id] || [];
     const updatedNotes = currentWorkspaceNotes.map(note =>
@@ -344,6 +368,26 @@ export default function Dashboard() {
     setWorkspaceNotes({
       ...workspaceNotes,
       [currentWorkspace.id]: updatedNotes
+    });
+  };
+
+  const handleUpdateGroup = (groupId, updates) => {
+    const currentGroups = workspaceGroups[currentWorkspace.id] || [];
+    const updatedGroups = currentGroups.map(group =>
+      group.id === groupId ? { ...group, ...updates } : group
+    );
+
+    setWorkspaceGroups({
+      ...workspaceGroups,
+      [currentWorkspace.id]: updatedGroups
+    });
+  };
+
+  const handleDeleteGroup = (groupId) => {
+    const currentGroups = workspaceGroups[currentWorkspace.id] || [];
+    setWorkspaceGroups({
+      ...workspaceGroups,
+      [currentWorkspace.id]: currentGroups.filter(g => g.id !== groupId)
     });
   };
   const handleAddConnection = (fromId, toId) => {
@@ -468,6 +512,11 @@ export default function Dashboard() {
             notePositions={notePositions}
             onPositionUpdate={handlePositionUpdate}
             onPositionChangeComplete={handlePositionChangeComplete}
+            onCreateNode={handleCreateNode}
+            groups={workspaceGroups[currentWorkspace.id] || []}
+            onCreateGroup={handleCreateGroup}
+            onUpdateGroup={handleUpdateGroup}
+            onDeleteGroup={handleDeleteGroup}
             onCopyNode={handleCopyNode}
             onDeleteNode={handleDeleteNode}
           />

@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { Plus, ZoomIn, ZoomOut, Maximize, Minimize, Sparkles, GitBranch, Palette, Share2, MoreVertical, Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Group, ZoomIn, ZoomOut, Maximize, Minimize, Sparkles, GitBranch, Palette, Share2, MoreVertical, Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import NoteCard from './Notecard';
 import CollaborationIndicator from './CollaborationIndicator';
 import RightPanel from './RightPanel';
+import GroupComponent from './Group';
 
-const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery, searchResultsCount = 0, currentSearchIndex = 0, onSearchNavigate, onUpdateNote, onAddConnection, notePositions: externalPositions, onPositionUpdate, onPositionChangeComplete, onCopyNode, onDeleteNode }, ref) => {
+const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, onFullscreenChange, rightPanelOpen, onRightPanelToggle, onSearch, searchQuery, searchResultsCount = 0, currentSearchIndex = 0, onSearchNavigate, onUpdateNote, onAddConnection, notePositions: externalPositions, onPositionUpdate, onPositionChangeComplete, onCopyNode, onDeleteNode, onCreateNode, groups = [], onCreateGroup, onUpdateGroup, onDeleteGroup }, ref) => {
   const [zoom, setZoom] = useState(.5);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [showActionMenu, setShowActionMenu] = useState(false);
@@ -361,7 +362,8 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
   };
 
   const actionMenuItems = [
-    { icon: Plus, label: 'New Node', onClick: () => console.log('New Node') },
+    { icon: Plus, label: 'New Node', onClick: onCreateNode },
+    { icon: Group, label: 'New Group', onClick: onCreateGroup },
     { icon: isFullscreen ? Minimize : Maximize, label: isFullscreen ? 'Exit Fullscreen' : 'Fullscreen', onClick: toggleFullscreen },
     { icon: GitBranch, label: isSimplified ? 'Show Details' : 'Simplify', onClick: () => setIsSimplified(!isSimplified) },
     { icon: Sparkles, label: 'AI Overview', onClick: () => console.log('AI Overview') },
@@ -380,6 +382,50 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
   const handleGroupPositionChange = (newPositions) => {
     setNotePositions(newPositions);
     onPositionUpdate?.(newPositions);
+  };
+
+  // Check if a node is inside a group
+  const isNodeInGroup = (nodePos, group) => {
+    const cardWidth = 320;
+    const cardHeight = 180;
+    const nodeCenterX = nodePos.x + cardWidth / 2;
+    const nodeCenterY = nodePos.y + cardHeight / 2;
+    
+    // Check if node center is inside the rectangle
+    return (
+      nodeCenterX >= group.x &&
+      nodeCenterX <= group.x + group.width &&
+      nodeCenterY >= group.y &&
+      nodeCenterY <= group.y + group.height
+    );
+  };
+
+  // Handle node position changes and update group membership
+  const handleNodePositionChangeComplete = (noteId, position) => {
+    // Note: We can't check isLocked here because it's internal to NoteCard
+    // The NoteCard component already prevents dragging when locked,
+    // so this will only be called for unlocked nodes
+
+    // Check which group this node is now in
+    groups.forEach(group => {
+      const isInside = isNodeInGroup(position, group);
+      const wasInGroup = group.nodeIds.includes(noteId);
+      
+      if (isInside && !wasInGroup) {
+        // Node moved into group - add it
+        onUpdateGroup?.(group.id, {
+          nodeIds: [...group.nodeIds, noteId]
+        });
+      } else if (!isInside && wasInGroup) {
+        // Node moved out of group - remove it
+        onUpdateGroup?.(group.id, {
+          nodeIds: group.nodeIds.filter(id => id !== noteId)
+        });
+      }
+    });
+
+    // Call the original callback
+    onPositionChangeComplete?.(noteId, position);
   };
   const getConnectionLines = () => {
     const lines = [];
@@ -540,11 +586,10 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
 
       {/* Canvas Content */}
       <div className="relative h-full overflow-hidden">
-        {/* Connection Lines - Behind notecards */}
+        {/* Groups and Connection Lines - Behind notecards */}
         <svg 
-          className="absolute pointer-events-none" 
+          className="absolute" 
           style={{ 
-            opacity: 0.5,
             left: 0,
             top: 0,
             width: '100%',
@@ -552,8 +597,33 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
             overflow: 'visible',
             transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
             transformOrigin: 'top left',
+            pointerEvents: 'none'
           }}
         >
+          {/* Groups rendered first (behind connection lines) */}
+          <g style={{ pointerEvents: 'auto' }}>
+            {groups.map((group) => (
+              <GroupComponent
+                key={group.id}
+                id={group.id}
+                label={group.label}
+                x={group.x}
+                y={group.y}
+                width={group.width}
+                height={group.height}
+                color={group.color}
+                nodeIds={group.nodeIds}
+                notes={notes}
+                notePositions={notePositions}
+                onUpdate={onUpdateGroup}
+                onDelete={onDeleteGroup}
+                zoom={zoom}
+                isLocked={false}
+              />
+            ))}
+          </g>
+
+          {/* Connection Lines */}
           <defs>
             <linearGradient id="lineGradCyan" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#00D4FF" stopOpacity="0.6" />
@@ -564,15 +634,17 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
               <stop offset="100%" stopColor="#7C3AED" stopOpacity="0.6" />
             </linearGradient>
           </defs>
-          {getConnectionLines().map((line) => (
-            <path
-              key={line.id}
-              d={line.d}
-              stroke={line.color === 'cyan' ? 'url(#lineGradCyan)' : 'url(#lineGradPurple)'}
-              strokeWidth="2"
-              fill="none"
-            />
-          ))}
+          <g style={{ opacity: 0.5, pointerEvents: 'none' }}>
+            {getConnectionLines().map((line) => (
+              <path
+                key={line.id}
+                d={line.d}
+                stroke={line.color === 'cyan' ? 'url(#lineGradCyan)' : 'url(#lineGradPurple)'}
+                strokeWidth="2"
+                fill="none"
+              />
+            ))}
+          </g>
         </svg>
 
         <div 
@@ -598,7 +670,7 @@ const Canvas = forwardRef(({ selectedNodes, onSelectNode, notes, isFullscreen, o
               selectedNodes={selectedNodes}
               allNotePositions={notePositions}
               onGroupPositionChange={handleGroupPositionChange}
-              onPositionChangeComplete={onPositionChangeComplete}
+              onPositionChangeComplete={handleNodePositionChangeComplete}
               zoom={zoom}
               pan={pan}
               onStartConnection={handleStartConnection}
